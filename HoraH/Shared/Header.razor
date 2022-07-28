@@ -1,0 +1,38 @@
+<div class="row g-0 border-non-important border-top-0 border-start-0 border-end-0 border-2 border-hrh-1-important position-fixed w-100 bg-hrh-fundo z-index-mais-a-frente">
+    <div class="col-3 d-md-none"></div>
+    <div class="col-6 d-flex col-md-12 justify-content-center">
+        <a href="" class='text-hrh-texto-important text-decoration-none'><h3 class='py-3 px-3 m-0'>Hora H<span class="oi oi-clock"></span></h3></a>
+    </div>
+    <div class="col-3 d-md-none d-flex justify-content-end">
+        @if (ColaboradorEstaLogado)
+        {
+            <button title="Navigation menu" class='px-4 border-0 hrh-bg-inherit text-hrh-texto onhover-bg-hrh-texto onhover-text-hrh-fundo' @onclick="@(() => SetNavToggled.InvokeAsync(!NavToggled))">
+                <span class="oi oi-menu"></span>
+            </button>
+        }
+    </div>
+</div>
+
+<div class="row g-0 border-non-important border-top-0 border-start-0 border-end-0 border-2 border-hrh-1-important invisible">
+    <div class="col-3 d-md-none"></div>
+    <div class="col-6 d-flex col-md-12 justify-content-center">
+        <a href="" class='text-hrh-texto-important text-decoration-none'><h3 class='py-3 px-3 m-0'>Hora H<span class="oi oi-clock"></span></h3></a>
+    </div>
+    <div class="col-3 d-md-none d-flex justify-content-end">
+        @if (ColaboradorEstaLogado)
+        {
+            <button title="Navigation menu" class='px-4 border-0 hrh-bg-inherit text-hrh-texto onhover-bg-hrh-texto onhover-text-hrh-fundo' @onclick="@(() => SetNavToggled.InvokeAsync(!NavToggled))">
+                <span class="oi oi-menu"></span>
+            </button>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public bool NavToggled { get; set; }
+    [Parameter]
+    public EventCallback<bool> SetNavToggled { get; set; }
+    [Parameter]
+    public bool ColaboradorEstaLogado { get; set; }
+}

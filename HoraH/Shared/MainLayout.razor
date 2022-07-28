@@ -1,0 +1,163 @@
+﻿@using Domain.Interfaces.Configuration
+@using Domain.Interfaces.Accessor
+@using Domain.Interfaces.Business
+@using Domain.Models.Bsn
+@using Domain.Models.Bsn.Autorizacao
+@using Domain.Models.ViewModels
+@using Domain.Models
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inherits LayoutComponentBase
+@inject ProtectedLocalStorage ProtectedLocalStore
+@inject IAppConfiguration AppConfiguration
+@inject IColaboradorLogadoAccessor ColaboradorLogadoAccessor
+@inject IAutorizacaoBusiness AutorizacaoBusiness
+
+<PageTitle>HoraH</PageTitle>
+
+<div class='bg-hrh-fundo text-hrh-texto min-vh-100'>
+
+    <Header NavToggled=@navToggled SetNavToggled=@SetNavToggled ColaboradorEstaLogado=@(refColaboradorLogado.EstaLogado) />
+
+    <main class="d-flex justify-content-end row g-0">
+        @if (refColaboradorLogado.EstaLogado)
+        {
+            @if (hasRendered)
+            {
+                <CascadingValue Value=@cascSetRefColaboradorLogadoAsync Name="SetRefColaboradorLogadoAsync">
+                    <CascadingValue Value=@cascSetMensagemDeAlerta Name="SetMensagemDeAlerta">
+                        <CascadingValue Value=@cascLockUI Name="LockUI">
+                            <CascadingValue Value=@cascUnlockUI Name="UnlockUI">
+                                <div class='col col-md-9 p-4'>
+                                    @Body
+                                </div>
+                            </CascadingValue>
+                        </CascadingValue>
+                    </CascadingValue>
+                </CascadingValue>
+            }
+            @if (navToggled)
+            {
+                <div class='min-vw-100 min-vh-100 d-flex justify-content-center align-items-center position-fixed start-0 opacity-50 bg-dark d-md-none'>
+            
+                </div>
+                <div class='h-100 col-7 position-fixed start-0 opacity-100 d-md-none bg-hrh-fundo'>
+                    <NavMenu SetRefColaboradorLogadoAsync=@SetRefColaboradorLogadoAsync VoltarParaTelaEntrar=@VoltarParaTelaEntrar SetNavToggled=@SetNavToggled />
+                </div>
+            }
+            
+            <div class='h-100 d-none d-md-block position-fixed start-0 col-3 bg-hrh-fundo'>
+                <NavMenu SetRefColaboradorLogadoAsync=@SetRefColaboradorLogadoAsync VoltarParaTelaEntrar=@VoltarParaTelaEntrar SetNavToggled=@SetNavToggled />
+            </div>
+        }
+        else
+        {
+            <div class='col px-4 pt-4'>
+                @if (estaNaTelaEntrar)
+                {
+                    <Entrar SetRefColaboradorLogadoAsync=@SetRefColaboradorLogadoAsync LockUI=@LockUI UnlockUI=@UnlockUI SetMensagemDeAlerta=@SetMensagemDeAlerta NavegarParaTelaCadastrar=@NavegarParaTelaCadastrar />
+                }
+                else
+                {
+                    <Cadastrar SetRefColaboradorLogadoAsync=@SetRefColaboradorLogadoAsync LockUI=@LockUI UnlockUI=@UnlockUI SetMensagemDeAlerta=@SetMensagemDeAlerta VoltarParaTelaEntrar=@VoltarParaTelaEntrar />
+                }
+            </div>
+        }
+        
+    </main>
+
+    @if (mensagemDeAlerta.EstaAberto)
+    {
+        <MensagemDeAlerta DetalhesMensagemDeAlerta=@mensagemDeAlerta FecharMensagemDeAlerta=@FecharMensagemDeAlerta />
+    }
+
+    @if (estaCarregando)
+    {
+        <LoadingModal />
+    }
+</div>
+
+@code {
+    private List<string> processosComLockUI = new List<string>();
+    public void LockUI(string idProccess)
+    {
+        if (!processosComLockUI.Contains(idProccess))
+        {
+            processosComLockUI.Add(idProccess);
+        }
+    }
+    public void UnlockUI(string idProccess)
+    {
+        if (processosComLockUI.Contains(idProccess))
+        {
+            processosComLockUI.Remove(idProccess);
+        }
+    }
+    public bool estaCarregando => processosComLockUI.Any();
+    private string idRenderizarUpUsuario = MongoId.NewMongoId;
+    private bool deveUpUsuarioLogado = false;
+    private bool navToggled = false;
+    public void SetNavToggled(bool upNavToggled)
+    {
+        navToggled = upNavToggled;
+    }
+    private bool estaNaTelaEntrar = true;
+    public void NavegarParaTelaCadastrar()
+    {
+        estaNaTelaEntrar = false;
+    }
+    public void VoltarParaTelaEntrar()
+    {
+        estaNaTelaEntrar = true;
+    }
+    private BsnColaboradorLogado refColaboradorLogado = new BsnColaboradorLogado();
+    public async Task SetRefColaboradorLogadoAsync(BsnColaboradorLogado upRefColaboradorLogado)
+    {
+        await ProtectedLocalStore.SetAsync(AppConfiguration.LocalStoreKeyDoIdColaboradorLogado, upRefColaboradorLogado);
+        deveUpUsuarioLogado = true;
+        navToggled = false;
+        LockUI(idRenderizarUpUsuario);
+        StateHasChanged();
+    }
+    private DetalhesMensagemDeAlertaViewModel mensagemDeAlerta = new DetalhesMensagemDeAlertaViewModel();
+    public void SetMensagemDeAlerta(DetalhesMensagemDeAlertaViewModel upMensagemDeAlerta)
+    {
+        mensagemDeAlerta = upMensagemDeAlerta;
+        mensagemDeAlerta.EstaAberto = true;
+    }
+    public void FecharMensagemDeAlerta()
+    {
+        mensagemDeAlerta.EstaAberto = false;
+    }
+    protected override void OnInitialized()
+    {
+        deveUpUsuarioLogado = true;
+        LockUI(idRenderizarUpUsuario);
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            hasRendered = true;
+            StateHasChanged();
+            return;
+        }
+        if (deveUpUsuarioLogado)
+        {
+            var result = await ProtectedLocalStore.GetAsync<BsnColaboradorLogado>(AppConfiguration.LocalStoreKeyDoIdColaboradorLogado);
+            if (result.Success && result.Value != null)
+            {
+                refColaboradorLogado = result.Value;
+                ColaboradorLogadoAccessor.ColaboradorLogado = result.Value;
+            }
+            deveUpUsuarioLogado = false;
+            UnlockUI(idRenderizarUpUsuario);
+            StateHasChanged();
+        }
+    }
+    public EventCallback<BsnColaboradorLogado> cascSetRefColaboradorLogadoAsync => EventCallback.Factory.Create<BsnColaboradorLogado>(this, SetRefColaboradorLogadoAsync);
+    public EventCallback<DetalhesMensagemDeAlertaViewModel> cascSetMensagemDeAlerta => EventCallback.Factory.Create<DetalhesMensagemDeAlertaViewModel>(this, SetMensagemDeAlerta);
+    public EventCallback<string> cascLockUI => EventCallback.Factory.Create<string>(this, LockUI);
+    public EventCallback<string> cascUnlockUI => EventCallback.Factory.Create<string>(this, UnlockUI);
+    public bool hasRendered = false;
+
+}

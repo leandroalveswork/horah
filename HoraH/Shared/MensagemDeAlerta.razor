@@ -1,0 +1,35 @@
+@using Domain.Models.ViewModels
+
+@inject NavigationManager UriHelper
+<div class='min-vw-100 min-vh-100 d-flex justify-content-center align-items-center position-fixed top-0 start-0 opacity-50 bg-dark'>
+    
+</div>
+<div class='min-vw-100 min-vh-100 d-flex flex-column justify-content-start align-items-center position-fixed top-0 start-0 opacity-100'>
+    <div class="bg-hrh-fundo border-non-important border-2 border-hrh-texto-important p-4 mt-5 d-flex flex-column align-items-center min-vw-50" >
+        <div class="d-flex flex-row w-100 justify-content-between align-items-start">
+            <h1 class="m-0">@DetalhesMensagemDeAlerta.Titulo</h1>
+            <button type="button" class="px-3 py-2 border-0 bg-hrh-fundo text-hrh-texto onhover-bg-hrh-texto onhover-text-hrh-fundo" @onclick="FecharDialogAsync"><span class='oi oi-x'></span></button>
+        </div>
+        <span class='h1 oi oi-@DetalhesMensagemDeAlerta.NomeDaClasseDeCssDoIcone icone-grande mt-4'></span>
+        <p class='mt-4 mb-0'>@DetalhesMensagemDeAlerta.Mensagem</p>
+        <div class="d-flex flex-row justify-content-end mt-4 w-100">
+            <button type="button" class="p-2 border-non-important border-2 border-hrh-1-important text-hrh-1 bg-hrh-fundo onhover-bg-hrh-1 onhover-text-hrh-fundo min-w-1_0x" @onclick="FecharDialogAsync">OK</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public DetalhesMensagemDeAlertaViewModel DetalhesMensagemDeAlerta { get; set; } = new DetalhesMensagemDeAlertaViewModel();
+    [Parameter]
+    public EventCallback FecharMensagemDeAlerta { get; set; }
+
+    private async Task FecharDialogAsync()
+    {
+        if (DetalhesMensagemDeAlerta.DeveRedirecionar)
+        {
+            UriHelper.NavigateTo(DetalhesMensagemDeAlerta.LinkRedirecionar, true);
+        }
+        await FecharMensagemDeAlerta.InvokeAsync();
+    }
+}
