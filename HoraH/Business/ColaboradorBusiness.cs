@@ -5,6 +5,7 @@ using HoraH.Domain.Interfaces.Configuration;
 using HoraH.Domain.Interfaces.Repository;
 using HoraH.Domain.Models.Bsn;
 using HoraH.Domain.Models.Bsn.Colaborador;
+using HoraH.Domain.Models.Bsn.Common;
 
 namespace HoraH.Business;
 public class ColaboradorBusiness : IColaboradorBusiness
@@ -21,7 +22,7 @@ public class ColaboradorBusiness : IColaboradorBusiness
         _colaboradorRepository = colaboradorRepository;
     }
 
-    public async Task<BsnResult<BsnWrapperDoResultadoDeColaborador>> PesquisarAsync(BsnPesquisaDeColaborador bsnPesquisa, int resultadosPorPagina)
+    public async Task<BsnResult<BsnWrapperBase<BsnResultadoDeColaborador>>> PesquisarAsync(BsnPesquisaDeColaborador bsnPesquisa, int resultadosPorPagina)
     {
         var colaboradores = await _colaboradorRepository.SelectAllAsync();
         var resultadosDeColaborador = HrhFiltrador.FiltrarPeloTexto(colaboradores, x => x.Nome.ToLower().RemoverAcentuacao(), bsnPesquisa.Nome?.ToLower()?.RemoverAcentuacao());
@@ -30,22 +31,20 @@ public class ColaboradorBusiness : IColaboradorBusiness
         resultadosDeColaborador = HrhOrdenador.OrdenarBaseadoNoNumeroDaColuna(resultadosDeColaborador, bsnPesquisa.NumeroDaColuna, bsnPesquisa.EhCrescente, x => x.Nome, x => x.Login, x => x.EstaAtivo);
         var totalDeResultadosDeColaborador = resultadosDeColaborador.Count();
         resultadosDeColaborador = HrhPaginador.Paginar(resultadosDeColaborador, bsnPesquisa.NumeroDaPagina, resultadosPorPagina, out int numeroDaPaginaCorrigido);
-        return new BsnResult<BsnWrapperDoResultadoDeColaborador>()
+        return BsnResult<BsnWrapperBase<BsnResultadoDeColaborador>>.OkConteudo(new BsnWrapperBase<BsnResultadoDeColaborador>
         {
-            EstaOk = true,
-            Resultado = new BsnWrapperDoResultadoDeColaborador()
-            {
-                Resultados = new List<BsnResultadoDeColaborador>(resultadosDeColaborador.Select(colb => new BsnResultadoDeColaborador()
+            Resultados = resultadosDeColaborador
+                .Select(colb => new BsnResultadoDeColaborador
                 {
                     Id = colb.Id,
                     Nome = colb.Nome,
                     Login = colb.Login,
                     EstaAtivo = colb.EstaAtivo
-                })),
-                Total = totalDeResultadosDeColaborador,
-                NumeroDaPaginaCorrigido = numeroDaPaginaCorrigido
-            }
-        };
+                })
+                .ToList(),
+            Total = totalDeResultadosDeColaborador,
+            NumeroDaPaginaCorrigido = numeroDaPaginaCorrigido
+        });
     }
 
     public int ResultadosPorPaginaPadrao => 5;

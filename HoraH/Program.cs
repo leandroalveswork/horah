@@ -35,6 +35,6 @@ app.UseRouting();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 await PrimeirosScripts.CarregarDadosAsync(app);
-((WebApplicationAccessor)(WebApplicationAccessor.Instancia)).App = app;
+WebApplicationAccessor.Instancia.App = app;
 
 app.Run();

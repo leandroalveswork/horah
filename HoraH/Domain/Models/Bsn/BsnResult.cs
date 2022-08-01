@@ -4,13 +4,7 @@ public class BsnResult<T>
     public bool EstaOk { get; set; }
     public T? Resultado { get; set; }
     public string Mensagem { get; set; } = "";
-    public static BsnResult<T> Ok => new BsnResult<T>() { EstaOk = true };
-    public static BsnResult<T> Erro(string mensagemDoErro)
-    {
-        return new BsnResult<T>()
-        {
-            EstaOk = false,
-            Mensagem = mensagemDoErro
-        };
-    }
+    public static BsnResult<T> Ok => new BsnResult<T> { EstaOk = true };
+    public static BsnResult<T> OkConteudo(T conteudo) => new BsnResult<T> { EstaOk = true, Resultado = conteudo };
+    public static BsnResult<T> Erro(string mensagemDoErro) => new BsnResult<T> { EstaOk = false, Mensagem = mensagemDoErro };
 }

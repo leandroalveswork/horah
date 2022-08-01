@@ -13,7 +13,7 @@
 
 <PageTitle>Conta</PageTitle>
 
-<div class='d-flex flex-column align-items-center'>
+<div class='d-flex flex-column'>
     <h1>Colaborador Index</h1>
     <div class='row g-0 w-100 d-flex'>
         <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
@@ -25,12 +25,8 @@
             <input type='text' @bind="login" />
         </div>
         <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
-            <label>Senha</label>
-            <input type='password' @bind="senha" />
-        </div>
-        <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
-            <label>Confirmar Senha</label>
-            <input type='password' @bind="confirmarSenha" />
+            <label>Login</label>
+            <input type='text' @bind="login" />
         </div>
         <div class='d-flex flex-column col-12 px-2 pt-3'>
             <button class='p-2 border-non-important border-2 border-success hrh-bg-inherit h-100 text-success-non-important onhover-bg-bs-success onhover-text-hrh-fundo' @onclick="SubmitAlterarAsync" >
