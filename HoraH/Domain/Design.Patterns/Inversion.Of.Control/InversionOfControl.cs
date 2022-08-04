@@ -2,6 +2,7 @@ using HoraH.Accessor;
 using HoraH.Business;
 using HoraH.Configuration;
 using HoraH.Domain.Design.Patterns.Singleton.Classico;
+using HoraH.Domain.Design.Patterns.Strategy;
 using HoraH.Domain.Interfaces.Accessor;
 using HoraH.Domain.Interfaces.Business;
 using HoraH.Domain.Interfaces.Configuration;

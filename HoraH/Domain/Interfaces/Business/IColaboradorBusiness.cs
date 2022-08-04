@@ -5,6 +5,5 @@ using HoraH.Domain.Models.Bsn.Common;
 namespace HoraH.Domain.Interfaces.Business;
 public interface IColaboradorBusiness
 {
-    Task<BsnResult<BsnWrapperBase<BsnResultadoDeColaborador>>> PesquisarAsync(BsnPesquisaDeColaborador bsnPesquisa, int resultadosPorPagina);
-    int ResultadosPorPaginaPadrao { get; }
+    Task<BsnResult<BsnWrapperBase<BsnResultadoDeColaborador>>> PesquisarAsync(BsnPesquisaDeColaborador bsnPesquisa);
 }

@@ -5,15 +5,15 @@
     
 </div>
 <div class='min-vw-100 min-vh-100 d-flex flex-column justify-content-start align-items-center position-fixed top-0 start-0 opacity-100'>
-    <div class="bg-hrh-fundo border-non-important border-2 border-hrh-texto-important p-4 mt-5 d-flex flex-column align-items-center min-vw-50" >
+    <div class="bg-hrh-fundo-non-important border-non-important border-2 border-hrh-texto p-4 mt-5 d-flex flex-column align-items-center min-vw-50-non-important" >
         <div class="d-flex flex-row w-100 justify-content-between align-items-start">
             <h1 class="m-0">@DetalhesMensagemDeAlerta.Titulo</h1>
-            <button type="button" class="px-3 py-2 border-0 bg-hrh-fundo text-hrh-texto onhover-bg-hrh-texto onhover-text-hrh-fundo" @onclick="FecharDialogAsync"><span class='oi oi-x'></span></button>
+            <button type="button" class="px-3 py-2 border-0 bg-hrh-fundo-non-important text-hrh-texto-non-important onhover-bg-hrh-texto-non-important onhover-text-hrh-fundo-non-important" @onclick="FecharDialogAsync"><span class='oi oi-x'></span></button>
         </div>
-        <span class='h1 oi oi-@DetalhesMensagemDeAlerta.NomeDaClasseDeCssDoIcone icone-grande mt-4'></span>
+        <span class='h1 oi oi-@DetalhesMensagemDeAlerta.NomeDaClasseDeCssDoIcone icone-grande-non-important mt-4'></span>
         <p class='mt-4 mb-0'>@DetalhesMensagemDeAlerta.Mensagem</p>
         <div class="d-flex flex-row justify-content-end mt-4 w-100">
-            <button type="button" class="p-2 border-non-important border-2 border-hrh-1-important text-hrh-1 bg-hrh-fundo onhover-bg-hrh-1 onhover-text-hrh-fundo min-w-1_0x" @onclick="FecharDialogAsync">OK</button>
+            <button type="button" class="p-2 border-non-important border-2 border-hrh-1 text-hrh-1-non-important bg-hrh-fundo-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-fundo-non-important min-w-1_0x-non-important" @onclick="FecharDialogAsync">OK</button>
         </div>
     </div>
 </div>

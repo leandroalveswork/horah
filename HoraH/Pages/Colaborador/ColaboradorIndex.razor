@@ -1,14 +1,20 @@
 @page "/colaborador"
 
+@using Domain.Design.Patterns.Strategy
+@using Domain.Design.Patterns.Strategy.Md
 @using Domain.Models
 @using Domain.Interfaces.Accessor
 @using Domain.Interfaces.Repository
 @using Domain.Interfaces.Business
+@using Domain.Models.Bsn.Common
 @using Domain.Models.Bsn.Autorizacao
+@using Domain.Models.Bsn.Colaborador
 @using Domain.Models.ViewModels
+@using Microsoft.AspNetCore.Mvc.Rendering
 @inject IColaboradorLogadoAccessor ColaboradorLogadoAccessor
 @inject IFuncionalidadeRepository FuncionalidadeRepository
 @inject IAutorizacaoBusiness AutorizacaoBusiness
+@inject IColaboradorBusiness ColaboradorBusiness
 @inject NavigationManager UriHelper
 
 <PageTitle>Conta</PageTitle>
@@ -25,36 +31,26 @@
             <input type='text' @bind="login" />
         </div>
         <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
-            <label>Login</label>
-            <input type='text' @bind="login" />
+            <label>Ativo</label>
+            @if (dropdownDoEstaAtivo != null)
+            {
+                <select @bind="estaAtivoSelecionado">
+                    @foreach (var opcaoDeEstaAtivo in dropdownDoEstaAtivo)
+                    {
+                        <option value="@opcaoDeEstaAtivo.Value">@opcaoDeEstaAtivo.Text</option>
+                    }
+                </select>
+            }
         </div>
         <div class='d-flex flex-column col-12 px-2 pt-3'>
-            <button class='p-2 border-non-important border-2 border-success hrh-bg-inherit h-100 text-success-non-important onhover-bg-bs-success onhover-text-hrh-fundo' @onclick="SubmitAlterarAsync" >
-                <span class='oi oi-check pe-2'></span>Salvar
+            <button class='p-2 border-non-important border-2 border-hrh-1 hrh-bg-inherit-non-important h-100 text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-fundo-non-important' @onclick="SubmitPesquisarAsync" >
+                <span class='oi oi-search pe-2'></span>Pesquisar
             </button>
         </div>
     </div>
-    <h1 class='pt-3'>Acessos</h1>
+    <h1 class='pt-3'>Colaboradores</h1>
     <div class='row g-0 w-100 d-flex'>
-        @foreach (var acesso in acessos)
-        {
-            <div class='d-flex flex-row col-12 col-md-6 px-2 pt-3'>
-                <input type='checkbox' checked="@acesso.EstaPermitido" disabled readonly />
-                <label class='ps-2'>@acesso.NomeFuncionalidade</label>
-            </div>
-        }
-        
-        <div class='d-flex flex-column col-12 px-2 pt-3'>
-            <button class='p-2 border-non-important border-2 border-hrh-1-important hrh-bg-inherit h-100 text-hrh-1 onhover-bg-hrh-1 onhover-text-hrh-fundo' @onclick="ClickSolicitarNovoAcesso" >
-                <span class='oi oi-plus pe-2'></span>Solicitar novo Acesso
-            </button>
-        </div>
-        
-        <div class='d-flex flex-column col-12 px-2 pt-3'>
-            <button class='p-2 border-non-important border-2 border-danger hrh-bg-inherit h-100 text-danger-non-important onhover-bg-bs-danger onhover-text-hrh-fundo' @onclick="ClickSolicitarExclusao" >
-                <span class='oi oi-x pe-2'></span>Solicitar Exclusão Programada
-            </button>
-        </div>
+       
     </div>
 </div>
 
@@ -69,10 +65,11 @@
     public EventCallback<string> UnlockUI { get; set; }
     private string? nome;
     private string? login;
-    private string? senha;
-    private string? confirmarSenha;
-    private List<BsnAcessoDoColaboradorLogado> acessos = new List<BsnAcessoDoColaboradorLogado>();
-    private string idAlterarDados = MongoId.NewMongoId;
+    private string? estaAtivoSelecionado;
+    private List<HrhMdItemDicBool>? dicionarioDoEstaAtivo;
+    private List<SelectListItem>? dropdownDoEstaAtivo;
+    private string idPesquisar = MongoId.NewMongoId;
+    private BsnWrapperBase<BsnResultadoDeColaborador>? wrapperDosResultados;
     private bool deveCarregarDados = false;
 
     protected override void OnInitialized()
@@ -84,51 +81,28 @@
     {
         if (deveCarregarDados)
         {
-            nome = ColaboradorLogadoAccessor.ColaboradorLogado.Nome;
-            login = ColaboradorLogadoAccessor.ColaboradorLogado.Login;
-            senha = "";
-            confirmarSenha = "";
-            acessos = ColaboradorLogadoAccessor.ColaboradorLogado.Acessos;
+            nome = "";
+            login = "";
+            dicionarioDoEstaAtivo = HrhConverter.CriarDicionarioDeSelectNullableBool();
+            dropdownDoEstaAtivo = HrhConverter.ParaListaDeItensDeDropdownDeDicionario(dicionarioDoEstaAtivo);
+            estaAtivoSelecionado = dicionarioDoEstaAtivo.First(x => x.ValorLogico == true).Indice.ToString();
             deveCarregarDados = false;
             StateHasChanged();
         }
     }
 
-    public async Task SubmitAlterarAsync()
+    public async Task SubmitPesquisarAsync()
     {
-        await LockUI.InvokeAsync(idAlterarDados);
+        await LockUI.InvokeAsync(idPesquisar);
         await Task.Yield();
-        var bsnAlterarConta = new BsnAlterarConta()
+        var bsnPesquisa = new BsnPesquisaDeColaborador()
         {
             Nome = nome ?? "",
             Login = login ?? "",
-            Senha = senha ?? "",
-            ConfirmarSenha = confirmarSenha ?? ""
+            EstaAtivo = HrhConverter.ParaValorDeDicionarioUsandoValue(dicionarioDoEstaAtivo, estaAtivoSelecionado ?? dicionarioDoEstaAtivo.First(x => x.ValorLogico == true).Indice.ToString()),
         };
-        var result = await AutorizacaoBusiness.AlterarColaboradorAsync(bsnAlterarConta);
-        if (!result.EstaOk)
-        {
-            var mensagemDeAlerta = new DetalhesMensagemDeAlertaViewModel()
-            {
-                Titulo = Message.TituloAtencao,
-                NomeDaClasseDeCssDoIcone = Message.IconeErro,
-                Mensagem = result.Mensagem
-            };
-            await SetMensagemDeAlerta.InvokeAsync(mensagemDeAlerta);
-            await UnlockUI.InvokeAsync(idAlterarDados);
-            return;
-        }
-        await SetRefColaboradorLogadoAsync.InvokeAsync(ColaboradorLogadoAccessor.ColaboradorLogado);
-        var mensagemDeAlertaOk = new DetalhesMensagemDeAlertaViewModel()
-        {
-            Titulo = Message.TituloAtencao,
-            NomeDaClasseDeCssDoIcone = Message.IconeSucesso,
-            Mensagem = result.Mensagem,
-            DeveRedirecionar = true,
-            LinkRedirecionar = "/conta"
-        };
-        await SetMensagemDeAlerta.InvokeAsync(mensagemDeAlertaOk);
-        await UnlockUI.InvokeAsync(idAlterarDados);
+        var result = await ColaboradorBusiness.PesquisarAsync(bsnPesquisa);
+        await UnlockUI.InvokeAsync(idPesquisar);
     }
 
     private void ClickSolicitarNovoAcesso()

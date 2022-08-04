@@ -4,26 +4,26 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 namespace HoraH.Domain.Design.Patterns.Strategy;
 public class HrhConverter
 {
-    public static List<SelectListItem> ParaListaDeItensDeDropdownDeDicionario<TValor>(IEnumerable<HrhMdItemDic<TValor>> dicionarioBase) where TValor : IComparable
+    public static List<SelectListItem> ParaListaDeItensDeDropdownDeDicionario<TValor>(IEnumerable<HrhMdItemDic<TValor>> dicionarioBase)
     {
         return dicionarioBase
             .Select(itemNoDicionario => new SelectListItem(itemNoDicionario.Label, itemNoDicionario.Indice.ToString()))
             .ToList();
     }
 
-    public static SelectListItem ParaItemDeDropdownDeDicionario<TValor>(IEnumerable<HrhMdItemDic<TValor>> dicionarioBase, TValor valorDicionario) where TValor : IComparable
+    public static SelectListItem ParaItemDeDropdownDeDicionario<TValor>(IEnumerable<HrhMdItemDic<TValor>> dicionarioBase, TValor valorDicionario)
     {
         foreach (var iParChaveValor in dicionarioBase)
         {
-            if (iParChaveValor.ValorLogico.CompareTo(valorDicionario) == 0)
+            if (iParChaveValor.CompararLogicoCom(valorDicionario) == 0)
             {
                 return new SelectListItem(iParChaveValor.Label, iParChaveValor.Indice.ToString());
             }
         }
-        throw new ArgumentException("O valor em 'valorDicionario' não foi encontrado no dicionário de valores 'dicionarioBase'");
+        throw new ArgumentException("valorDicionario");
     }
 
-    public static TValor ParaValorDeDicionarioUsandoValue<TValor>(IEnumerable<HrhMdItemDic<TValor>> dicionarioBase, string valueDoItemDeDropdownDeDicionario) where TValor : IComparable
+    public static TValor ParaValorDeDicionarioUsandoValue<TValor>(IEnumerable<HrhMdItemDic<TValor>> dicionarioBase, string valueDoItemDeDropdownDeDicionario)
     {
         foreach (var iParChaveValor in dicionarioBase)
         {
@@ -32,10 +32,10 @@ public class HrhConverter
                 return iParChaveValor.ValorLogico;
             }
         }
-        throw new IndexOutOfRangeException("O dicionário de valores 'dicionarioBase' não possui o índice indicado por 'valueDoItemDeDropdownDeDicionario'");
+        throw new IndexOutOfRangeException("valueDoItemDeDropdownDeDicionario");
     }
 
-    public static TValor ParaValorDeDicionario<TValor>(IEnumerable<HrhMdItemDic<TValor>> dicionarioBase, SelectListItem itemDeDropdownDeDicionario) where TValor : IComparable
+    public static TValor ParaValorDeDicionario<TValor>(IEnumerable<HrhMdItemDic<TValor>> dicionarioBase, SelectListItem itemDeDropdownDeDicionario)
     {
         try
         {
@@ -47,13 +47,20 @@ public class HrhConverter
         }
     }
 
-    public static List<HrhMdItemDic<bool?>> CriarDicionarioDeValoresNullableBool()
+    public static List<HrhMdItemDicBool> CriarDicionarioDeSelectNullableBool()
     {
-        return new List<HrhMdItemDic<bool?>>()
+        return new List<HrhMdItemDicBool>()
         {
-            new HrhMdItemDic<bool?> { Indice = 0, ValorLogico = null, Label = "Selecione..." },
-            new HrhMdItemDic<bool?> { Indice = 1, ValorLogico = true, Label = "Sim" },
-            new HrhMdItemDic<bool?> { Indice = 2, ValorLogico = false, Label = "Não" }
+            new HrhMdItemDicBool { Indice = 0, ValorLogico = null, Label = "Selecione..." },
+            new HrhMdItemDicBool { Indice = 1, ValorLogico = true, Label = "Sim" },
+            new HrhMdItemDicBool { Indice = 2, ValorLogico = false, Label = "Não" }
         };
+    }
+
+    public static List<HrhMdItemDicSuporte> CriarDicionarioDeSelectListaSuporte(IEnumerable<HrhMdValorItemDicSuporte> itensSuporte)
+    {
+        return itensSuporte
+            .Select((x, idxAtual) => new HrhMdItemDicSuporte { Indice = idxAtual, ValorLogico = x, Label = x.Texto })
+            .ToList();
     }
 }

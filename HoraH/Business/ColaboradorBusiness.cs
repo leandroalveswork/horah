@@ -22,7 +22,7 @@ public class ColaboradorBusiness : IColaboradorBusiness
         _colaboradorRepository = colaboradorRepository;
     }
 
-    public async Task<BsnResult<BsnWrapperBase<BsnResultadoDeColaborador>>> PesquisarAsync(BsnPesquisaDeColaborador bsnPesquisa, int resultadosPorPagina)
+    public async Task<BsnResult<BsnWrapperBase<BsnResultadoDeColaborador>>> PesquisarAsync(BsnPesquisaDeColaborador bsnPesquisa)
     {
         var colaboradores = await _colaboradorRepository.SelectAllAsync();
         var resultadosDeColaborador = HrhFiltrador.FiltrarPeloTexto(colaboradores, x => x.Nome.ToLower().RemoverAcentuacao(), bsnPesquisa.Nome?.ToLower()?.RemoverAcentuacao());
@@ -30,7 +30,7 @@ public class ColaboradorBusiness : IColaboradorBusiness
         resultadosDeColaborador = HrhFiltrador.FiltrarPeloPredicate(resultadosDeColaborador, x => x.EstaAtivo == bsnPesquisa.EstaAtivo, bsnPesquisa.EstaAtivo);
         resultadosDeColaborador = HrhOrdenador.OrdenarBaseadoNoNumeroDaColuna(resultadosDeColaborador, bsnPesquisa.NumeroDaColuna, bsnPesquisa.EhCrescente, x => x.Nome, x => x.Login, x => x.EstaAtivo);
         var totalDeResultadosDeColaborador = resultadosDeColaborador.Count();
-        resultadosDeColaborador = HrhPaginador.Paginar(resultadosDeColaborador, bsnPesquisa.NumeroDaPagina, resultadosPorPagina, out int numeroDaPaginaCorrigido);
+        resultadosDeColaborador = HrhPaginador.Paginar(resultadosDeColaborador, bsnPesquisa.NumeroDaPagina, bsnPesquisa.ResultadosPorPagina, out int numeroDaPaginaCorrigido);
         return BsnResult<BsnWrapperBase<BsnResultadoDeColaborador>>.OkConteudo(new BsnWrapperBase<BsnResultadoDeColaborador>
         {
             Resultados = resultadosDeColaborador

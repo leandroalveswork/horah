@@ -1,42 +1,42 @@
 ﻿@using Domain.Models.Bsn
 @using Domain.Models.Bsn.Autorizacao
-<nav class="d-flex flex-column border-non-important border-top-0 border-start-0 border-bottom-0 border-2 border-hrh-1-important h-100">
+<nav class="d-flex flex-column border-non-important border-top-0 border-start-0 border-bottom-0 border-2 border-hrh-1 h-100">
     <div class="d-flex">
-        <NavLink href="" class='text-hrh-1 onhover-bg-hrh-1 onhover-text-hrh-fundo text-decoration-none w-100 px-3 py-2' @onclick="@(() => SetNavToggled.InvokeAsync(false))">
+        <NavLink href="" class='text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-fundo-non-important text-decoration-none w-100 px-3 py-2' @onclick="@(() => SetNavToggled.InvokeAsync(false))">
             <span class="oi oi-home pe-2" aria-hidden="true"></span> Home
         </NavLink>
     </div>
     <div class="d-flex">
-        <NavLink href="conta" class='text-hrh-1 onhover-bg-hrh-1 onhover-text-hrh-fundo text-decoration-none w-100 px-3 py-2'  @onclick="@(() => SetNavToggled.InvokeAsync(false))">
+        <NavLink href="conta" class='text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-fundo-non-important text-decoration-none w-100 px-3 py-2'  @onclick="@(() => SetNavToggled.InvokeAsync(false))">
             <span class="oi oi-cog pe-2" aria-hidden="true"></span> Conta
         </NavLink>
     </div>
     <div class="d-flex">
-        <NavLink href="fetchdata" class='text-hrh-1 onhover-bg-hrh-1 onhover-text-hrh-fundo text-decoration-none w-100 px-3 py-2'  @onclick="@(() => SetNavToggled.InvokeAsync(false))">
+        <NavLink href="colaborador" class='text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-fundo-non-important text-decoration-none w-100 px-3 py-2'  @onclick="@(() => SetNavToggled.InvokeAsync(false))">
             <span class="oi oi-person pe-2" aria-hidden="true"></span> Colaborador
         </NavLink>
     </div>
     
     <div class="d-flex">
-        <NavLink href="fetchdata" class='text-hrh-1 onhover-bg-hrh-1 onhover-text-hrh-fundo text-decoration-none w-100 px-3 py-2'  @onclick="@(() => SetNavToggled.InvokeAsync(false))">
+        <NavLink href="fetchdata" class='text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-fundo-non-important text-decoration-none w-100 px-3 py-2'  @onclick="@(() => SetNavToggled.InvokeAsync(false))">
             <span class="oi oi-task pe-2" aria-hidden="true"></span> Presença
         </NavLink>
     </div>
     
     <div class="d-flex">
-        <NavLink href="fetchdata" class='text-hrh-1 onhover-bg-hrh-1 onhover-text-hrh-fundo text-decoration-none w-100 px-3 py-2'  @onclick="@(() => SetNavToggled.InvokeAsync(false))">
+        <NavLink href="fetchdata" class='text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-fundo-non-important text-decoration-none w-100 px-3 py-2'  @onclick="@(() => SetNavToggled.InvokeAsync(false))">
             <span class="oi oi-loop-square pe-2" aria-hidden="true"></span> Solicitação
         </NavLink>
     </div>
     
     <div class="d-flex">
-        <NavLink href="fetchdata" class='text-hrh-1 onhover-bg-hrh-1 onhover-text-hrh-fundo text-decoration-none w-100 px-3 py-2'  @onclick="@(() => SetNavToggled.InvokeAsync(false))">
+        <NavLink href="fetchdata" class='text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-fundo-non-important text-decoration-none w-100 px-3 py-2'  @onclick="@(() => SetNavToggled.InvokeAsync(false))">
             <span class="oi oi-spreadsheet pe-2" aria-hidden="true"></span> Logs
         </NavLink>
     </div>
     
     <div class="d-flex">
-        <NavLink href="" class='text-hrh-1 onhover-bg-hrh-1 onhover-text-hrh-fundo text-decoration-none w-100 px-3 py-2' @onclick="ClickSair">
+        <NavLink href="" class='text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-fundo-non-important text-decoration-none w-100 px-3 py-2' @onclick="ClickSair">
             <span class="oi oi-account-logout pe-2" aria-hidden="true"></span> Sair
         </NavLink>
     </div>

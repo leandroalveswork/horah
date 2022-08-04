@@ -14,7 +14,7 @@
 
 <PageTitle>HoraH</PageTitle>
 
-<div class='bg-hrh-fundo text-hrh-texto min-vh-100'>
+<div class='bg-hrh-fundo-non-important text-hrh-texto-non-important min-vh-100'>
 
     <Header NavToggled=@navToggled SetNavToggled=@SetNavToggled ColaboradorEstaLogado=@(refColaboradorLogado.EstaLogado) />
 
@@ -40,12 +40,12 @@
                 <div class='min-vw-100 min-vh-100 d-flex justify-content-center align-items-center position-fixed start-0 opacity-50 bg-dark d-md-none'>
             
                 </div>
-                <div class='h-100 col-7 position-fixed start-0 opacity-100 d-md-none bg-hrh-fundo'>
+                <div class='h-100 col-7 position-fixed start-0 opacity-100 d-md-none bg-hrh-fundo-non-important'>
                     <NavMenu SetRefColaboradorLogadoAsync=@SetRefColaboradorLogadoAsync VoltarParaTelaEntrar=@VoltarParaTelaEntrar SetNavToggled=@SetNavToggled />
                 </div>
             }
             
-            <div class='h-100 d-none d-md-block position-fixed start-0 col-3 bg-hrh-fundo'>
+            <div class='h-100 d-none d-md-block position-fixed start-0 col-3 bg-hrh-fundo-non-important'>
                 <NavMenu SetRefColaboradorLogadoAsync=@SetRefColaboradorLogadoAsync VoltarParaTelaEntrar=@VoltarParaTelaEntrar SetNavToggled=@SetNavToggled />
             </div>
         }
