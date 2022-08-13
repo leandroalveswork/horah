@@ -25,11 +25,13 @@
             {
                 <CascadingValue Value=@cascSetRefColaboradorLogadoAsync Name="SetRefColaboradorLogadoAsync">
                     <CascadingValue Value=@cascSetMensagemDeAlerta Name="SetMensagemDeAlerta">
-                        <CascadingValue Value=@cascLockUI Name="LockUI">
-                            <CascadingValue Value=@cascUnlockUI Name="UnlockUI">
-                                <div class='col col-md-9 p-4'>
-                                    @Body
-                                </div>
+                        <CascadingValue Value=@cascSetMensagemConfirmar Name="SetMensagemConfirmar">
+                            <CascadingValue Value=@cascLockUI Name="LockUI">
+                                <CascadingValue Value=@cascUnlockUI Name="UnlockUI">
+                                    <div class='col col-md-9 p-4'>
+                                        @Body
+                                    </div>
+                                </CascadingValue>
                             </CascadingValue>
                         </CascadingValue>
                     </CascadingValue>
@@ -68,6 +70,10 @@
     @if (mensagemDeAlerta.EstaAberto)
     {
         <MensagemDeAlerta DetalhesMensagemDeAlerta=@mensagemDeAlerta FecharMensagemDeAlerta=@FecharMensagemDeAlerta />
+    }
+    @if (mensagemConfirmar.EstaAberto)
+    {
+        <MensagemConfirmar DetalhesMensagemConfirmar=@mensagemConfirmar FecharMensagemConfirmar=@FecharMensagemConfirmar />
     }
 
     @if (estaCarregando)
@@ -128,6 +134,16 @@
     {
         mensagemDeAlerta.EstaAberto = false;
     }
+    private DetalhesMensagemConfirmarViewModel mensagemConfirmar = new DetalhesMensagemConfirmarViewModel();
+    public void SetMensagemConfirmar(DetalhesMensagemConfirmarViewModel upMensagemConfirmar)
+    {
+        mensagemConfirmar = upMensagemConfirmar;
+        mensagemConfirmar.EstaAberto = true;
+    }
+    public void FecharMensagemConfirmar()
+    {
+        mensagemConfirmar.EstaAberto = false;
+    }
     protected override void OnInitialized()
     {
         deveUpUsuarioLogado = true;
@@ -156,6 +172,7 @@
     }
     public EventCallback<BsnColaboradorLogado> cascSetRefColaboradorLogadoAsync => EventCallback.Factory.Create<BsnColaboradorLogado>(this, SetRefColaboradorLogadoAsync);
     public EventCallback<DetalhesMensagemDeAlertaViewModel> cascSetMensagemDeAlerta => EventCallback.Factory.Create<DetalhesMensagemDeAlertaViewModel>(this, SetMensagemDeAlerta);
+    public EventCallback<DetalhesMensagemConfirmarViewModel> cascSetMensagemConfirmar => EventCallback.Factory.Create<DetalhesMensagemConfirmarViewModel>(this, SetMensagemConfirmar);
     public EventCallback<string> cascLockUI => EventCallback.Factory.Create<string>(this, LockUI);
     public EventCallback<string> cascUnlockUI => EventCallback.Factory.Create<string>(this, UnlockUI);
     public bool hasRendered = false;

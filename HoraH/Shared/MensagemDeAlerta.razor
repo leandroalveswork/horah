@@ -1,6 +1,5 @@
 @using Domain.Models.ViewModels
 
-@inject NavigationManager UriHelper
 <div class='min-vw-100 min-vh-100 d-flex justify-content-center align-items-center position-fixed top-0 start-0 opacity-50 bg-dark'>
     
 </div>
@@ -26,9 +25,9 @@
 
     private async Task FecharDialogAsync()
     {
-        if (DetalhesMensagemDeAlerta.DeveRedirecionar)
+        if (DetalhesMensagemDeAlerta.AcaoAposFechar.HasValue)
         {
-            UriHelper.NavigateTo(DetalhesMensagemDeAlerta.LinkRedirecionar, true);
+            await DetalhesMensagemDeAlerta.AcaoAposFechar.Value.InvokeAsync();
         }
         await FecharMensagemDeAlerta.InvokeAsync();
     }

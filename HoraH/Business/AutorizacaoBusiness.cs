@@ -162,7 +162,7 @@ public class AutorizacaoBusiness : IAutorizacaoBusiness
             return BsnResult<object>.Erro(resultValidacaoSenhaConfirmarSenhaIguais.Mensagem);
         }
         var bsnReturn = BsnResult<object>.Ok;
-        bsnReturn.Mensagem = Message.ContaAlteradaSucesso;
+        bsnReturn.Mensagem = Message.RegistroAlteradoSucesso;
         var transactionOk = await _uow.ExecuteTransactionAndReturnOkAsync(async () => {
             var resultValidacaoComMesmoLogin = await ValidarAlterarColaboradorComMesmoLoginAsync(bsnAlterarConta);
             if (!resultValidacaoComMesmoLogin.EstaOk)

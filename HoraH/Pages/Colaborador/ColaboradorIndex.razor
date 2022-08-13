@@ -1,11 +1,12 @@
 @page "/colaborador"
 
 @using Domain.Design.Patterns.Strategy
-@using Domain.Design.Patterns.Strategy.Md
 @using Domain.Models
 @using Domain.Interfaces.Accessor
 @using Domain.Interfaces.Repository
 @using Domain.Interfaces.Business
+@using Domain.Models.Bsn
+@using Domain.Models.Bsn.Args
 @using Domain.Models.Bsn.Common
 @using Domain.Models.Bsn.Autorizacao
 @using Domain.Models.Bsn.Colaborador
@@ -32,15 +33,11 @@
         </div>
         <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
             <label>Ativo</label>
-            @if (dropdownDoEstaAtivo != null)
-            {
-                <select @bind="estaAtivoSelecionado">
-                    @foreach (var opcaoDeEstaAtivo in dropdownDoEstaAtivo)
-                    {
-                        <option value="@opcaoDeEstaAtivo.Value">@opcaoDeEstaAtivo.Text</option>
-                    }
-                </select>
-            }
+            <select @bind="estaAtivoSelecionado">
+                <option value="@HrhListaSuporteStrategy.BoolAnulavelParaValueDeOption(null)">Selecione...</option>
+                <option value="@HrhListaSuporteStrategy.BoolAnulavelParaValueDeOption(true)">Sim</option>
+                <option value="@HrhListaSuporteStrategy.BoolAnulavelParaValueDeOption(false)">Não</option>
+            </select>
         </div>
         <div class='d-flex flex-column col-12 px-2 pt-3'>
             <button class='p-2 border-non-important border-2 border-hrh-1 hrh-bg-inherit-non-important h-100 text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-fundo-non-important' @onclick="SubmitPesquisarAsync" >
@@ -48,9 +45,27 @@
             </button>
         </div>
     </div>
-    <h1 class='pt-3'>Colaboradores</h1>
-    <div class='row g-0 w-100 d-flex'>
-       
+    <h1 class='pt-3'><i class="bi bi-square"></i><i class="bi bi-check-square-fill"></i>Colaboradores</h1>
+    <div class='row g-0 w-100 d-flex mt-3'>
+        <RadzenDataGrid AllowColumnResize="true" AllowSorting="true" PageSize="5" AllowPaging="true"
+            Data="@relacoes" TItem="BsnRelacaoDeColaborador">
+            <Columns>
+                <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Property="Nome" Title="Nome" Frozen="true" Width="200px" />
+                <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Property="Login" Title="Login" Width="140px"/>
+                <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Property="EstaAtivo" Title="Ativo" Width="50px">
+                    <Template Context="data">
+                        @if(data.EstaAtivo)
+                        {
+                            <div>Ativo</div>
+                        }
+                        else
+                        {
+                            <div>Inativo</div>
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+            </Columns>
+        </RadzenDataGrid>
     </div>
 </div>
 
@@ -59,6 +74,8 @@
     public EventCallback<BsnColaboradorLogado> SetRefColaboradorLogadoAsync { get; set; }
     [CascadingParameter(Name = "SetMensagemDeAlerta")]
     public EventCallback<DetalhesMensagemDeAlertaViewModel> SetMensagemDeAlerta { get; set; }
+    [CascadingParameter(Name = "SetMensagemConfirmar")]
+    public EventCallback<DetalhesMensagemConfirmarViewModel> SetMensagemConfirmar { get; set; }
     [CascadingParameter(Name = "LockUI")]
     public EventCallback<string> LockUI { get; set; }
     [CascadingParameter(Name = "UnlockUI")]
@@ -66,28 +83,36 @@
     private string? nome;
     private string? login;
     private string? estaAtivoSelecionado;
-    private List<HrhMdItemDicBool>? dicionarioDoEstaAtivo;
-    private List<SelectListItem>? dropdownDoEstaAtivo;
     private string idPesquisar = MongoId.NewMongoId;
-    private BsnWrapperBase<BsnResultadoDeColaborador>? wrapperDosResultados;
-    private bool deveCarregarDados = false;
+    private List<BsnRelacaoDeColaborador> relacoes = new List<BsnRelacaoDeColaborador>();
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
-        deveCarregarDados = true;
-    }
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        if (deveCarregarDados)
+        nome = "";
+        login = "";
+        estaAtivoSelecionado = HrhListaSuporteStrategy.BoolAnulavelParaValueDeOption(null);
+        var resultRelacoes = await ColaboradorBusiness.PesquisarAsync(BsnPesquisaDeColaborador.SemFiltro);
+        if (resultRelacoes.EstaOk)
         {
-            nome = "";
-            login = "";
-            dicionarioDoEstaAtivo = HrhConverter.CriarDicionarioDeSelectNullableBool();
-            dropdownDoEstaAtivo = HrhConverter.ParaListaDeItensDeDropdownDeDicionario(dicionarioDoEstaAtivo);
-            estaAtivoSelecionado = dicionarioDoEstaAtivo.First(x => x.ValorLogico == true).Indice.ToString();
-            deveCarregarDados = false;
-            StateHasChanged();
+            relacoes = resultRelacoes.Resultado
+                .Select(colb => new BsnRelacaoDeColaborador
+                {
+                    Id = colb.Id,
+                    Nome = colb.Nome,
+                    EstaAtivo = colb.EstaAtivo,
+                    OnConfirmarPromptEstaAtivo = EventCallback.Factory.Create<BsnArgsPromptEstaAtivoColaborador>(this, OnPromptEstaAtivoColaboradorAsync)
+                })
+                .ToList();
+        }
+        else
+        {
+            relacoes = new List<BsnRelacaoDeColaborador>();
+            await SetMensagemDeAlerta.InvokeAsync(new DetalhesMensagemDeAlertaViewModel
+            {
+                Titulo = Message.TituloAtencao,
+                NomeDaClasseDeCssDoIcone = Message.IconeErro,
+                Mensagem = resultRelacoes.Mensagem
+            });
         }
     }
 
@@ -99,10 +124,37 @@
         {
             Nome = nome ?? "",
             Login = login ?? "",
-            EstaAtivo = HrhConverter.ParaValorDeDicionarioUsandoValue(dicionarioDoEstaAtivo, estaAtivoSelecionado ?? dicionarioDoEstaAtivo.First(x => x.ValorLogico == true).Indice.ToString()),
+            EstaAtivo = HrhListaSuporteStrategy.ValueDeOptionParaBoolAnulavel(estaAtivoSelecionado)
         };
         var result = await ColaboradorBusiness.PesquisarAsync(bsnPesquisa);
         await UnlockUI.InvokeAsync(idPesquisar);
+    }
+
+    public async Task OnPromptEstaAtivoColaboradorAsync(BsnArgsPromptEstaAtivoColaborador args)
+    {
+        await SetMensagemConfirmar.InvokeAsync(new DetalhesMensagemConfirmarViewModel
+        {
+            Titulo = Message.TituloAtencao,
+            NomeDaClasseDeCssDoIcone = Message.IconePergunta,
+            Mensagem = args.EstaAtivoAtual ? Message.TemCertezaAtivar : Message.TemCertezaInativar,
+            AcaoAposConfirmar = EventCallback.Factory.Create(this, async () => {
+                BsnResult<object>? resultAtivarOuInativar = null;
+                if (args.EstaAtivoAtual)
+                {
+                    resultAtivarOuInativar = await ColaboradorBusiness.AtivarAsync(args.Id);
+                }
+                else
+                {
+                    resultAtivarOuInativar = await ColaboradorBusiness.InativarAsync(args.Id);
+                }
+                await SetMensagemDeAlerta.InvokeAsync(new DetalhesMensagemDeAlertaViewModel
+                {
+                    Titulo = Message.TituloAtencao,
+                    NomeDaClasseDeCssDoIcone = resultAtivarOuInativar.EstaOk ? Message.IconeSucesso : Message.IconeErro,
+                    Mensagem = resultAtivarOuInativar.Mensagem
+                });
+            })
+        });
     }
 
     private void ClickSolicitarNovoAcesso()

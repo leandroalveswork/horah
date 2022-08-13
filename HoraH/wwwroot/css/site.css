@@ -206,6 +206,14 @@ a, .btn-link {
 }
 
 
+.onhover-pointer-non-important {
+    cursor: pointer;
+}
+.onhover-pointer {
+    cursor: pointer !important;
+}
+
+
 .onhover-bg-hrh-1-non-important:hover {
     background-color: var(--hrh-1);
     transition-duration: var(--hrh-duracao);
@@ -228,5 +236,10 @@ a, .btn-link {
 
 .onhover-text-hrh-fundo-non-important:hover {
     color: var(--hrh-fundo);
+    transition-duration: var(--hrh-duracao);
+}
+
+.onhover-text-hrh-1-non-important:hover {
+    color: var(--hrh-1);
     transition-duration: var(--hrh-duracao);
 }

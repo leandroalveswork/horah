@@ -1,5 +1,5 @@
 namespace HoraH.Domain.Design.Patterns.Strategy;
-public class HrhFiltrador
+public class HrhFiltradorAnulavel
 {
     public static IEnumerable<TItem> FiltrarPeloPredicate<TItem, TFiltro>(IEnumerable<TItem> itens, Func<TItem, bool> predicate, TFiltro filtro)
     {

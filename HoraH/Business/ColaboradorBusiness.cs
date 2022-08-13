@@ -3,6 +3,7 @@ using HoraH.Domain.Interfaces.Accessor;
 using HoraH.Domain.Interfaces.Business;
 using HoraH.Domain.Interfaces.Configuration;
 using HoraH.Domain.Interfaces.Repository;
+using HoraH.Domain.Models;
 using HoraH.Domain.Models.Bsn;
 using HoraH.Domain.Models.Bsn.Colaborador;
 using HoraH.Domain.Models.Bsn.Common;
@@ -22,30 +23,58 @@ public class ColaboradorBusiness : IColaboradorBusiness
         _colaboradorRepository = colaboradorRepository;
     }
 
-    public async Task<BsnResult<BsnWrapperBase<BsnResultadoDeColaborador>>> PesquisarAsync(BsnPesquisaDeColaborador bsnPesquisa)
+    public async Task<BsnResult<List<BsnRelacaoDeColaborador>>> PesquisarAsync(BsnPesquisaDeColaborador bsnPesquisa)
     {
         var colaboradores = await _colaboradorRepository.SelectAllAsync();
-        var resultadosDeColaborador = HrhFiltrador.FiltrarPeloTexto(colaboradores, x => x.Nome.ToLower().RemoverAcentuacao(), bsnPesquisa.Nome?.ToLower()?.RemoverAcentuacao());
-        resultadosDeColaborador = HrhFiltrador.FiltrarPeloTexto(resultadosDeColaborador, x => x.Login.ToLower().RemoverAcentuacao(), bsnPesquisa.Login?.ToLower()?.RemoverAcentuacao());
-        resultadosDeColaborador = HrhFiltrador.FiltrarPeloPredicate(resultadosDeColaborador, x => x.EstaAtivo == bsnPesquisa.EstaAtivo, bsnPesquisa.EstaAtivo);
-        resultadosDeColaborador = HrhOrdenador.OrdenarBaseadoNoNumeroDaColuna(resultadosDeColaborador, bsnPesquisa.NumeroDaColuna, bsnPesquisa.EhCrescente, x => x.Nome, x => x.Login, x => x.EstaAtivo);
-        var totalDeResultadosDeColaborador = resultadosDeColaborador.Count();
-        resultadosDeColaborador = HrhPaginador.Paginar(resultadosDeColaborador, bsnPesquisa.NumeroDaPagina, bsnPesquisa.ResultadosPorPagina, out int numeroDaPaginaCorrigido);
-        return BsnResult<BsnWrapperBase<BsnResultadoDeColaborador>>.OkConteudo(new BsnWrapperBase<BsnResultadoDeColaborador>
-        {
-            Resultados = resultadosDeColaborador
-                .Select(colb => new BsnResultadoDeColaborador
+        var relacoesDeColaborador = HrhFiltradorAnulavel.FiltrarPeloTexto(colaboradores, x => x.Nome.ToLower().RemoverAcentuacao(), bsnPesquisa.Nome?.ToLower()?.RemoverAcentuacao());
+        relacoesDeColaborador = HrhFiltradorAnulavel.FiltrarPeloTexto(relacoesDeColaborador, x => x.Login.ToLower().RemoverAcentuacao(), bsnPesquisa.Login?.ToLower()?.RemoverAcentuacao());
+        relacoesDeColaborador = HrhFiltradorAnulavel.FiltrarPeloPredicate(relacoesDeColaborador, x => x.EstaAtivo == bsnPesquisa.EstaAtivo, bsnPesquisa.EstaAtivo);
+        return BsnResult<List<BsnRelacaoDeColaborador>>.OkConteudo(
+            relacoesDeColaborador
+                .Select(colb => new BsnRelacaoDeColaborador
                 {
                     Id = colb.Id,
                     Nome = colb.Nome,
                     Login = colb.Login,
                     EstaAtivo = colb.EstaAtivo
                 })
-                .ToList(),
-            Total = totalDeResultadosDeColaborador,
-            NumeroDaPaginaCorrigido = numeroDaPaginaCorrigido
-        });
+                .ToList()
+        );
     }
 
-    public int ResultadosPorPaginaPadrao => 5;
+    public async Task<BsnResult<object>> AtivarAsync(string id)
+    {
+        var dbColaborador = await _colaboradorRepository.SelectByIdAsync(id);
+        if (dbColaborador == null)
+        {
+            return BsnResult<object>.Erro("Colaborador não encontrado.");
+        }
+        var resultOk = BsnResult<object>.Ok;
+        resultOk.Mensagem = Message.RegistroAtivadoSucesso;
+        if (dbColaborador.EstaAtivo)
+        {
+            return resultOk;
+        }
+        dbColaborador.EstaAtivo = true;
+        await _colaboradorRepository.UpdateAsync(id, dbColaborador);
+        return resultOk;
+    }
+
+    public async Task<BsnResult<object>> InativarAsync(string id)
+    {
+        var dbColaborador = await _colaboradorRepository.SelectByIdAsync(id);
+        if (dbColaborador == null)
+        {
+            return BsnResult<object>.Erro("Colaborador não encontrado.");
+        }
+        var resultOk = BsnResult<object>.Ok;
+        resultOk.Mensagem = Message.RegistroInativadoSucesso;
+        if (!dbColaborador.EstaAtivo)
+        {
+            return resultOk;
+        }
+        dbColaborador.EstaAtivo = false;
+        await _colaboradorRepository.UpdateAsync(id, dbColaborador);
+        return resultOk;
+    }
 }
