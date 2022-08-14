@@ -26,8 +26,8 @@ public class ColaboradorBusiness : IColaboradorBusiness
     public async Task<BsnResult<List<BsnRelacaoDeColaborador>>> PesquisarAsync(BsnPesquisaDeColaborador bsnPesquisa)
     {
         var colaboradores = await _colaboradorRepository.SelectAllAsync();
-        var relacoesDeColaborador = HrhFiltradorAnulavel.FiltrarPeloTexto(colaboradores, x => x.Nome.ToLower().RemoverAcentuacao(), bsnPesquisa.Nome?.ToLower()?.RemoverAcentuacao());
-        relacoesDeColaborador = HrhFiltradorAnulavel.FiltrarPeloTexto(relacoesDeColaborador, x => x.Login.ToLower().RemoverAcentuacao(), bsnPesquisa.Login?.ToLower()?.RemoverAcentuacao());
+        var relacoesDeColaborador = HrhFiltradorAnulavel.FiltrarPeloTexto(colaboradores, x => x.Nome.ToLower().Trim().RemoverAcentuacao(), bsnPesquisa.Nome?.ToLower()?.Trim()?.RemoverAcentuacao());
+        relacoesDeColaborador = HrhFiltradorAnulavel.FiltrarPeloTexto(relacoesDeColaborador, x => x.Login.ToLower().Trim().RemoverAcentuacao(), bsnPesquisa.Login?.ToLower()?.Trim()?.RemoverAcentuacao());
         relacoesDeColaborador = HrhFiltradorAnulavel.FiltrarPeloPredicate(relacoesDeColaborador, x => x.EstaAtivo == bsnPesquisa.EstaAtivo, bsnPesquisa.EstaAtivo);
         return BsnResult<List<BsnRelacaoDeColaborador>>.OkConteudo(
             relacoesDeColaborador

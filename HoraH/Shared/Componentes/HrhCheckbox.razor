@@ -1,7 +1,5 @@
 <h2>
-    <i class="bi bi-square"></i>
-    <i class="bi bi-check-square-fill"></i>
-    <i class=@((EChecado ? "bi bi-check-square-fill" : "bi bi-square") + cssComumDoCheckbox) @onclick="Checkbox_ClickAsync"></i>
+    <i class=@((EChecado ? "bi bi-check-square-fill" : "bi bi-square") + " " + cssComumDoCheckbox) @onclick="Checkbox_ClickAsync"></i>
 </h2>
 
 @code {
@@ -11,9 +9,12 @@
     public EventCallback<bool> EChecadoChanged { get; set; }
     [Parameter]
     public bool EDesabilitado { get; set; }
-    private string cssComumDoCheckbox => EDesabilitado ? "" : "onhover-text-hrh-1-non-important onhover-pointer-non-important";
+    private string cssComumDoCheckbox => EDesabilitado ? "text-white-50" : "onhover-text-hrh-1-non-important onhover-pointer-non-important";
     public async Task Checkbox_ClickAsync()
     {
-        await EChecadoChanged.InvokeAsync(!EChecado);
+        if (!EDesabilitado)
+        {
+            await EChecadoChanged.InvokeAsync(!EChecado);
+        }
     }
 }

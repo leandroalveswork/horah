@@ -198,11 +198,23 @@ a, .btn-link {
 }
 
 
-.z-index-mais-a-frente-non-important {
+.z-index-1000-non-important {
     z-index: 1000;
 }
-.z-index-mais-a-frente {
+.z-index-1000 {
     z-index: 1000 !important;
+}
+.z-index-2000-non-important {
+    z-index: 2000;
+}
+.z-index-2000 {
+    z-index: 2000 !important;
+}
+.z-index-3000-non-important {
+    z-index: 3000;
+}
+.z-index-3000 {
+    z-index: 3000 !important;
 }
 
 

@@ -1,9 +1,9 @@
 @using Domain.Models.ViewModels
 
-<div class='min-vw-100 min-vh-100 d-flex justify-content-center align-items-center position-fixed top-0 start-0 opacity-50 bg-dark'>
+<div class='min-vw-100 min-vh-100 d-flex justify-content-center align-items-center position-fixed top-0 start-0 opacity-50 bg-dark z-index-2000-non-important'>
     
 </div>
-<div class='min-vw-100 min-vh-100 d-flex flex-column justify-content-start align-items-center position-fixed top-0 start-0 opacity-100'>
+<div class='min-vw-100 min-vh-100 d-flex flex-column justify-content-start align-items-center position-fixed top-0 start-0 opacity-100 z-index-2000-non-important'>
     <div class="bg-hrh-fundo-non-important border-non-important border-2 border-hrh-texto p-4 mt-5 d-flex flex-column align-items-center min-vw-50-non-important" >
         <div class="d-flex flex-row w-100 justify-content-between align-items-start">
             <h1 class="m-0">@DetalhesMensagemConfirmar.Titulo</h1>
@@ -12,8 +12,8 @@
         <span class='h1 oi oi-@DetalhesMensagemConfirmar.NomeDaClasseDeCssDoIcone icone-grande-non-important mt-4'></span>
         <p class='mt-4 mb-0'>@DetalhesMensagemConfirmar.Mensagem</p>
         <div class="d-flex flex-row justify-content-end mt-4 w-100">
-            <button type="button" class="p-2 border-non-important border-2 border-success text-success-non-important bg-hrh-fundo-non-important onhover-bg-success-non-important onhover-text-hrh-fundo-non-important min-w-1_0x-non-important" @onclick="ConfirmarDialogAsync">@DetalhesMensagemConfirmar.LabelConfirmar</button>
-            <button type="button" class="p-2 border-non-important border-2 border-danger text-danger-non-important bg-hrh-fundo-non-important onhover-bg-danger-non-important onhover-text-hrh-fundo-non-important min-w-1_0x-non-important" @onclick="CancelarDialogAsync">@DetalhesMensagemConfirmar.LabelCancelar</button>
+            <button type="button" class="p-2 border-non-important border-2 border-success text-success-non-important bg-hrh-fundo-non-important onhover-bg-bs-success-non-important onhover-text-hrh-fundo-non-important min-w-1_0x-non-important me-3" @onclick="ConfirmarDialogAsync">@DetalhesMensagemConfirmar.LabelConfirmar</button>
+            <button type="button" class="p-2 border-non-important border-2 border-danger text-danger-non-important bg-hrh-fundo-non-important onhover-bg-bs-danger-non-important onhover-text-hrh-fundo-non-important min-w-1_0x-non-important" @onclick="CancelarDialogAsync">@DetalhesMensagemConfirmar.LabelCancelar</button>
         </div>
     </div>
 </div>

@@ -124,20 +124,14 @@
             return;
         }
         await SetRefColaboradorLogadoAsync.InvokeAsync(ColaboradorLogadoAccessor.ColaboradorLogado);
-        var mensagemDeAlertaOk = new DetalhesMensagemDeAlertaViewModel()
+        await SetMensagemDeAlerta.InvokeAsync(new DetalhesMensagemDeAlertaViewModel()
         {
             Titulo = Message.TituloAtencao,
             NomeDaClasseDeCssDoIcone = Message.IconeSucesso,
             Mensagem = result.Mensagem,
-            AcaoAposFechar = EventCallback.Factory.Create(this, RecarregarPagina)
-        };
-        await SetMensagemDeAlerta.InvokeAsync(mensagemDeAlertaOk);
+            AcaoAposFechar = EventCallback.Factory.Create(this, () => UriHelper.NavigateTo("/conta", true))
+        });
         await UnlockUI.InvokeAsync(idAlterarDados);
-    }
-
-    private void RecarregarPagina()
-    {
-        UriHelper.NavigateTo("/conta", true);
     }
 
     private void ClickSolicitarNovoAcesso()

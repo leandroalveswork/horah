@@ -12,6 +12,7 @@
 @using Domain.Models.Bsn.Colaborador
 @using Domain.Models.ViewModels
 @using Microsoft.AspNetCore.Mvc.Rendering
+
 @inject IColaboradorLogadoAccessor ColaboradorLogadoAccessor
 @inject IFuncionalidadeRepository FuncionalidadeRepository
 @inject IAutorizacaoBusiness AutorizacaoBusiness
@@ -45,27 +46,27 @@
             </button>
         </div>
     </div>
-    <h1 class='pt-3'><i class="bi bi-square"></i><i class="bi bi-check-square-fill"></i>Colaboradores</h1>
+    <h1 class='pt-3'>Colaboradores</h1>
     <div class='row g-0 w-100 d-flex mt-3'>
-        <RadzenDataGrid AllowColumnResize="true" AllowSorting="true" PageSize="5" AllowPaging="true"
-            Data="@relacoes" TItem="BsnRelacaoDeColaborador">
-            <Columns>
-                <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Property="Nome" Title="Nome" Frozen="true" Width="200px" />
-                <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Property="Login" Title="Login" Width="140px"/>
-                <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Property="EstaAtivo" Title="Ativo" Width="50px">
-                    <Template Context="data">
-                        @if(data.EstaAtivo)
-                        {
-                            <div>Ativo</div>
-                        }
-                        else
-                        {
-                            <div>Inativo</div>
-                        }
-                    </Template>
-                </RadzenDataGridColumn>
-            </Columns>
-        </RadzenDataGrid>
+        @if (relacoes.Any())
+        {
+            <RadzenDataGrid AllowColumnResize="true" AllowSorting="true" PageSize="5" AllowPaging="true"
+                Data="@relacoes" TItem="BsnRelacaoDeColaborador">
+                <Columns>
+                    <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Property="Nome" Title="Nome" Frozen="true" Width="200px" />
+                    <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Property="Login" Title="Login" Width="140px"/>
+                    <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Property="EstaAtivo" Title="Ativo" Width="50px">
+                        <Template Context="data">
+                            <HrhCheckbox EChecado=@data.EstaAtivo EChecadoChanged=@(async () => await OnPromptEstaAtivoColaboradorAsync(new BsnArgsPromptEstaAtivoColaborador { Id = data.Id, EstaAtivoAtual = !data.EstaAtivo })) EDesabilitado=@false />
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        }
+        else
+        {
+            <div>A pesquisa não encontrou nenhuma relação.</div>
+        }
     </div>
 </div>
 
@@ -84,6 +85,7 @@
     private string? login;
     private string? estaAtivoSelecionado;
     private string idPesquisar = MongoId.NewMongoId;
+    private string idAtivarInativar = MongoId.NewMongoId;
     private List<BsnRelacaoDeColaborador> relacoes = new List<BsnRelacaoDeColaborador>();
 
     protected override async Task OnInitializedAsync()
@@ -91,18 +93,15 @@
         nome = "";
         login = "";
         estaAtivoSelecionado = HrhListaSuporteStrategy.BoolAnulavelParaValueDeOption(null);
-        var resultRelacoes = await ColaboradorBusiness.PesquisarAsync(BsnPesquisaDeColaborador.SemFiltro);
+        await CarregarRelacoesAsync(BsnPesquisaDeColaborador.SemFiltro);
+    }
+
+    public async Task CarregarRelacoesAsync(BsnPesquisaDeColaborador pesquisa)
+    {
+        var resultRelacoes = await ColaboradorBusiness.PesquisarAsync(pesquisa);
         if (resultRelacoes.EstaOk)
         {
-            relacoes = resultRelacoes.Resultado
-                .Select(colb => new BsnRelacaoDeColaborador
-                {
-                    Id = colb.Id,
-                    Nome = colb.Nome,
-                    EstaAtivo = colb.EstaAtivo,
-                    OnConfirmarPromptEstaAtivo = EventCallback.Factory.Create<BsnArgsPromptEstaAtivoColaborador>(this, OnPromptEstaAtivoColaboradorAsync)
-                })
-                .ToList();
+            relacoes = resultRelacoes.Resultado;
         }
         else
         {
@@ -120,13 +119,12 @@
     {
         await LockUI.InvokeAsync(idPesquisar);
         await Task.Yield();
-        var bsnPesquisa = new BsnPesquisaDeColaborador()
+        await CarregarRelacoesAsync(new BsnPesquisaDeColaborador()
         {
             Nome = nome ?? "",
             Login = login ?? "",
             EstaAtivo = HrhListaSuporteStrategy.ValueDeOptionParaBoolAnulavel(estaAtivoSelecionado)
-        };
-        var result = await ColaboradorBusiness.PesquisarAsync(bsnPesquisa);
+        });
         await UnlockUI.InvokeAsync(idPesquisar);
     }
 
@@ -138,6 +136,8 @@
             NomeDaClasseDeCssDoIcone = Message.IconePergunta,
             Mensagem = args.EstaAtivoAtual ? Message.TemCertezaAtivar : Message.TemCertezaInativar,
             AcaoAposConfirmar = EventCallback.Factory.Create(this, async () => {
+                await LockUI.InvokeAsync(idAtivarInativar);
+                await Task.Yield();
                 BsnResult<object>? resultAtivarOuInativar = null;
                 if (args.EstaAtivoAtual)
                 {
@@ -151,8 +151,10 @@
                 {
                     Titulo = Message.TituloAtencao,
                     NomeDaClasseDeCssDoIcone = resultAtivarOuInativar.EstaOk ? Message.IconeSucesso : Message.IconeErro,
-                    Mensagem = resultAtivarOuInativar.Mensagem
+                    Mensagem = resultAtivarOuInativar.Mensagem,
+                    AcaoAposFechar = EventCallback.Factory.Create(this, () => UriHelper.NavigateTo("/colaborador", true))
                 });
+                await UnlockUI.InvokeAsync(idAtivarInativar);
             })
         });
     }
