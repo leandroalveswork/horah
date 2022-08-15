@@ -1,10 +1,12 @@
 using System.Linq.Expressions;
 using HoraH.Domain.Interfaces.Accessor;
+using HoraH.Domain.Interfaces.Business;
 using HoraH.Domain.Interfaces.Configuration;
 using HoraH.Domain.Interfaces.Repository;
 using HoraH.Domain.Models;
 using HoraH.Domain.Models.Bsn;
 using HoraH.Domain.Models.Bsn.Autorizacao;
+using HoraH.Domain.Models.Bsn.Funcionalidade;
 using HoraH.Domain.Models.DbModels;
 using HoraH.Repository.Common;
 using MongoDB.Driver;
@@ -12,14 +14,14 @@ using MongoDB.Driver;
 namespace HoraH.Repository;
 public class AcessoRepository : RepositoryBase<AcessoDbModel>, IAcessoRepository
 {
-    private readonly IFuncionalidadeRepository _funcionalidadeRepository;
+    private readonly IFuncionalidadeBusiness _funcionalidadeBusiness;
     public AcessoRepository(IDbClientAccessor dbClientAccessor,
                             IAppConfiguration appConfiguration,
                             IDbSessionAccessor dbSessionAccessor,
-                            IFuncionalidadeRepository funcionalidadeRepository)
+                            IFuncionalidadeBusiness funcionalidadeBusiness)
         : base(dbClientAccessor, appConfiguration, dbSessionAccessor)
     {
-        _funcionalidadeRepository = funcionalidadeRepository;
+        _funcionalidadeBusiness = funcionalidadeBusiness;
     }
 
     protected override string GetNomeColecEntidade()
@@ -50,17 +52,17 @@ public class AcessoRepository : RepositoryBase<AcessoDbModel>, IAcessoRepository
     // Acessos padrão podem apenas marcar presença e solicitar
     public List<AcessoDbModel> MontarAcessosPadraoParaColaborador(string idColaborador)
     {
-        return new List<AcessoDbModel>()
+        return new List<AcessoDbModel>
         {
-            new AcessoDbModel() { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = _funcionalidadeRepository.GetIdDaFuncionalidadeComNome(BsnFuncionalidadeDoSistema.ColaboradorListar), EstaPermitido = false },
-            new AcessoDbModel() { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = _funcionalidadeRepository.GetIdDaFuncionalidadeComNome(BsnFuncionalidadeDoSistema.ColaboradorAcessoAlterar), EstaPermitido = false },
-            new AcessoDbModel() { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = _funcionalidadeRepository.GetIdDaFuncionalidadeComNome(BsnFuncionalidadeDoSistema.ColaboradorAtivar), EstaPermitido = false },
-            new AcessoDbModel() { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = _funcionalidadeRepository.GetIdDaFuncionalidadeComNome(BsnFuncionalidadeDoSistema.RegistroListar), EstaPermitido = false },
-            new AcessoDbModel() { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = _funcionalidadeRepository.GetIdDaFuncionalidadeComNome(BsnFuncionalidadeDoSistema.PresencaListar), EstaPermitido = false },
-            new AcessoDbModel() { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = _funcionalidadeRepository.GetIdDaFuncionalidadeComNome(BsnFuncionalidadeDoSistema.PresencaMarcar), EstaPermitido = true },
-            new AcessoDbModel() { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = _funcionalidadeRepository.GetIdDaFuncionalidadeComNome(BsnFuncionalidadeDoSistema.SolicitacaoIncluir), EstaPermitido = true },
-            new AcessoDbModel() { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = _funcionalidadeRepository.GetIdDaFuncionalidadeComNome(BsnFuncionalidadeDoSistema.SolicitacaoListar), EstaPermitido = false },
-            new AcessoDbModel() { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = _funcionalidadeRepository.GetIdDaFuncionalidadeComNome(BsnFuncionalidadeDoSistema.SolicitacaoAprovar), EstaPermitido = false },
+            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.ListarColaboradorId, EstaPermitido = false },
+            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.AlterarAcessoId, EstaPermitido = false },
+            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.AtivarColaboradorId, EstaPermitido = false },
+            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.ListarLogId, EstaPermitido = false },
+            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.MarcarPresencaId, EstaPermitido = false },
+            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.ListarPresencaId, EstaPermitido = true },
+            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.IncluirSolicitacaoId, EstaPermitido = true },
+            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.ListarSolicitacaoId, EstaPermitido = false },
+            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.AprovarSolicitacaoId, EstaPermitido = false },
         };
     }
 }

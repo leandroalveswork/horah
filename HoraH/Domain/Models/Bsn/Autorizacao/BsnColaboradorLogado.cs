@@ -5,5 +5,5 @@ public class BsnColaboradorLogado
     public string Nome { get; set; } = "";
     public string Login { get; set; } = "";
     public bool EstaLogado => !string.IsNullOrWhiteSpace(Id);
-    public List<BsnAcessoDoColaboradorLogado> Acessos { get; set; } = new List<BsnAcessoDoColaboradorLogado>();
+    public List<BsnAcesso> Acessos { get; set; } = new List<BsnAcesso>();
 }

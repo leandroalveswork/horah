@@ -17,20 +17,20 @@ public class AutorizacaoBusiness : IAutorizacaoBusiness
     private readonly IAppConfiguration _appConfiguration;
     private readonly IColaboradorLogadoAccessor _colaboradorLogadoAccessor;
     private readonly IColaboradorRepository _colaboradorRepository;
-    private readonly IFuncionalidadeRepository _funcionalidadeRepository;
+    private readonly IFuncionalidadeBusiness _funcionalidadeBusiness;
     private readonly IAcessoRepository _acessoRepository;
     private readonly IUnitOfWork _uow;
     public AutorizacaoBusiness(IAppConfiguration appConfiguration,
                                IColaboradorLogadoAccessor colaboradorLogadoAccessor,
                                IColaboradorRepository colaboradorRepository,
-                               IFuncionalidadeRepository funcionalidadeRepository,
+                               IFuncionalidadeBusiness funcionalidadeBusiness,
                                IAcessoRepository acessoRepository,
                                IUnitOfWork uow)
     {
         _appConfiguration = appConfiguration;
         _colaboradorLogadoAccessor = colaboradorLogadoAccessor;
         _colaboradorRepository = colaboradorRepository;
-        _funcionalidadeRepository = funcionalidadeRepository;
+        _funcionalidadeBusiness = funcionalidadeBusiness;
         _acessoRepository = acessoRepository;
         _uow = uow;
     }
@@ -64,18 +64,25 @@ public class AutorizacaoBusiness : IAutorizacaoBusiness
                 bsnReturn = BsnResult<object>.Erro("Login ou senha inválidos.");
                 return;
             }
+            if (!colaborador.EstaAtivo)
+            {
+                colaborador.EstaAtivo = true;
+                await _colaboradorRepository.UpdateAsync(colaborador.Id, colaborador);
+            }
             var acessosDoColaborador = await _acessoRepository.SelectByIdDoColaboradorAsync(colaborador.Id);
             _colaboradorLogadoAccessor.ColaboradorLogado = new BsnColaboradorLogado()
             {
                 Id = colaborador.Id,
                 Nome = colaborador.Nome,
                 Login = colaborador.Login,
-                Acessos = new List<BsnAcessoDoColaboradorLogado>(acessosDoColaborador.Select(x => new BsnAcessoDoColaboradorLogado()
-                {
-                    IdFuncionalidade = x.IdFuncionalidade,
-                    NomeFuncionalidade = _funcionalidadeRepository.GetNomeDaFuncionalidadeComId(x.IdFuncionalidade),
-                    EstaPermitido = x.EstaPermitido
-                }))
+                Acessos = acessosDoColaborador
+                    .Select(x => new BsnAcesso
+                    {
+                        IdFuncionalidade = x.IdFuncionalidade,
+                        Funcionalidade = _funcionalidadeBusiness.GetFuncionalidadePorId(x.IdFuncionalidade),
+                        EstaPermitido = x.EstaPermitido
+                    })
+                    .ToList()
             };
         });
         if (!transactionOk)
@@ -124,12 +131,14 @@ public class AutorizacaoBusiness : IAutorizacaoBusiness
                 Id = novoDbColaborador.Id,
                 Nome = novoDbColaborador.Nome,
                 Login = novoDbColaborador.Login,
-                Acessos = new List<BsnAcessoDoColaboradorLogado>(acessosPadrao.Select(x => new BsnAcessoDoColaboradorLogado()
-                {
-                    IdFuncionalidade = x.IdFuncionalidade,
-                    NomeFuncionalidade = _funcionalidadeRepository.GetNomeDaFuncionalidadeComId(x.IdFuncionalidade),
-                    EstaPermitido = x.EstaPermitido
-                }))
+                Acessos = acessosPadrao
+                    .Select(x => new BsnAcesso
+                    {
+                        IdFuncionalidade = x.IdFuncionalidade,
+                        Funcionalidade = _funcionalidadeBusiness.GetFuncionalidadePorId(x.IdFuncionalidade),
+                        EstaPermitido = x.EstaPermitido
+                    })
+                    .ToList()
             };
         });
         if (!transactionOk)

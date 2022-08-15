@@ -10,20 +10,20 @@ namespace HoraH.Business;
 public class DadosPadraoBusiness : IDadosPadraoBusiness
 {
     private readonly IAppConfiguration _appConfiguration;
-    private readonly IFuncionalidadeRepository _funcionalidadeRepository;
+    private readonly IFuncionalidadeBusiness _funcionalidadeBusiness;
     private readonly IColaboradorRepository _colaboradorRepository;
     private readonly IAcessoRepository _acessoRepository;
     private readonly IUnitOfWork _uow;
     private readonly IAutorizacaoBusiness _autorizacaoBusiness;
     public DadosPadraoBusiness(IAppConfiguration appConfiguration,
-                               IFuncionalidadeRepository funcionalidadeRepository,
+                               IFuncionalidadeBusiness funcionalidadeBusiness,
                                IColaboradorRepository colaboradorRepository,
                                IAcessoRepository acessoRepository,
                                IUnitOfWork uow,
                                IAutorizacaoBusiness autorizacaoBusiness)
     {
         _appConfiguration = appConfiguration;
-        _funcionalidadeRepository = funcionalidadeRepository;
+        _funcionalidadeBusiness = funcionalidadeBusiness;
         _colaboradorRepository = colaboradorRepository;
         _acessoRepository = acessoRepository;
         _uow = uow;
@@ -33,7 +33,7 @@ public class DadosPadraoBusiness : IDadosPadraoBusiness
     private async Task CompletarAcessosDoAdminAsync(string idDoAdmin)
     {
         var acessosDoAdminDb = await _acessoRepository.SelectByIdDoColaboradorAsync(idDoAdmin);
-        foreach (var funcionalidadeDoSistema in _funcionalidadeRepository.ListarFuncionalidadesDoSistema())
+        foreach (var funcionalidadeDoSistema in _funcionalidadeBusiness.ListarFuncionalidadesDoSistema())
         {
             var acessoAFuncionalidade = acessosDoAdminDb.FirstOrDefault(x => x.IdFuncionalidade == funcionalidadeDoSistema.Id);
             if (acessoAFuncionalidade == null)
@@ -88,33 +88,9 @@ public class DadosPadraoBusiness : IDadosPadraoBusiness
         await CompletarAcessosDoAdminAsync(colaboradorAdminBanco.Id);
     }
 
-    private async Task CompletarFuncionalidadesAsync()
-    {
-        foreach (var funcionalidadeDoSistema in _funcionalidadeRepository.ListarFuncionalidadesDoSistema())
-        {
-            var funcionalidadeBanco = await _funcionalidadeRepository.SelectByIdAsync(funcionalidadeDoSistema.Id);
-            if (funcionalidadeBanco == null)
-            {
-                var inserirFuncionalidadeDb = new FuncionalidadeDbModel()
-                {
-                    Id = funcionalidadeDoSistema.Id,
-                    Nome = funcionalidadeDoSistema.Nome
-                };
-                await _funcionalidadeRepository.InsertAsync(inserirFuncionalidadeDb);
-                continue;
-            }
-            if (funcionalidadeBanco.Nome != funcionalidadeDoSistema.Nome)
-            {
-                funcionalidadeBanco.Nome = funcionalidadeDoSistema.Nome;
-                await _funcionalidadeRepository.UpdateAsync(funcionalidadeBanco.Id, funcionalidadeBanco);
-            }
-        }
-    }
-
     public async Task CompletarAsync()
     {
         await _uow.ExecuteTransactionAndReturnOkAsync(async () => {
-            await CompletarFuncionalidadesAsync();
             await CompletarAdminAsync();
         });
     }

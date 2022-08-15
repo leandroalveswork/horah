@@ -8,7 +8,6 @@
 @using Domain.Models.ViewModels
 
 @inject IColaboradorLogadoAccessor ColaboradorLogadoAccessor
-@inject IFuncionalidadeRepository FuncionalidadeRepository
 @inject IAutorizacaoBusiness AutorizacaoBusiness
 @inject NavigationManager UriHelper
 
@@ -45,7 +44,7 @@
         {
             <div class='d-flex flex-row col-12 col-md-6 px-2 pt-3'>
                 <input type='checkbox' checked="@acesso.EstaPermitido" disabled readonly />
-                <label class='ps-2'>@acesso.NomeFuncionalidade</label>
+                <label class='ps-2'>@acesso.Funcionalidade.Nome</label>
             </div>
         }
         
@@ -68,6 +67,8 @@
     public EventCallback<BsnColaboradorLogado> SetRefColaboradorLogadoAsync { get; set; }
     [CascadingParameter(Name = "SetMensagemDeAlerta")]
     public EventCallback<DetalhesMensagemDeAlertaViewModel> SetMensagemDeAlerta { get; set; }
+    [CascadingParameter(Name = "SetMensagemConfirmar")]
+    public EventCallback<DetalhesMensagemConfirmarViewModel> SetMensagemConfirmar { get; set; }
     [CascadingParameter(Name = "LockUI")]
     public EventCallback<string> LockUI { get; set; }
     [CascadingParameter(Name = "UnlockUI")]
@@ -76,7 +77,7 @@
     private string? login;
     private string? senha;
     private string? confirmarSenha;
-    private List<BsnAcessoDoColaboradorLogado> acessos = new List<BsnAcessoDoColaboradorLogado>();
+    private List<BsnAcesso> acessos = new List<BsnAcesso>();
     private string idAlterarDados = MongoId.NewMongoId;
     private bool deveCarregarDados = false;
 

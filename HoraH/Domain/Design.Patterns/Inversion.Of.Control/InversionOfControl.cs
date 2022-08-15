@@ -39,13 +39,13 @@ public static class InversionOfControl
     public static IServiceCollection InjetarRepository(this IServiceCollection services)
     {
         services.AddScoped<IColaboradorRepository, ColaboradorRepository>();
-        services.AddScoped<IFuncionalidadeRepository, FuncionalidadeRepository>();
         services.AddScoped<IAcessoRepository, AcessoRepository>();
         return services;
     }
     
     public static IServiceCollection InjetarBusiness(this IServiceCollection services)
     {
+        services.AddScoped<IFuncionalidadeBusiness, FuncionalidadeBusiness>();
         services.AddScoped<IAutorizacaoBusiness, AutorizacaoBusiness>();
         services.AddScoped<IColaboradorBusiness, ColaboradorBusiness>();
         services.AddScoped<IDadosPadraoBusiness, DadosPadraoBusiness>();

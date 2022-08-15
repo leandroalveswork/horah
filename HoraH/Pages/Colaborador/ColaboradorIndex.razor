@@ -10,11 +10,11 @@
 @using Domain.Models.Bsn.Common
 @using Domain.Models.Bsn.Autorizacao
 @using Domain.Models.Bsn.Colaborador
+@using Domain.Models.Bsn.Funcionalidade
 @using Domain.Models.ViewModels
 @using Microsoft.AspNetCore.Mvc.Rendering
 
 @inject IColaboradorLogadoAccessor ColaboradorLogadoAccessor
-@inject IFuncionalidadeRepository FuncionalidadeRepository
 @inject IAutorizacaoBusiness AutorizacaoBusiness
 @inject IColaboradorBusiness ColaboradorBusiness
 @inject NavigationManager UriHelper
@@ -55,9 +55,16 @@
                 <Columns>
                     <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Property="Nome" Title="Nome" Frozen="true" Width="200px" />
                     <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Property="Login" Title="Login" Width="140px"/>
+                    <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Title="Acessos">
+                        <Template Context="data">
+
+                        </Template>
+                    </RadzenDataGridColumn>
                     <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Property="EstaAtivo" Title="Ativo" Width="50px">
                         <Template Context="data">
-                            <HrhCheckbox EChecado=@data.EstaAtivo EChecadoChanged=@(async () => await OnPromptEstaAtivoColaboradorAsync(new BsnArgsPromptEstaAtivoColaborador { Id = data.Id, EstaAtivoAtual = !data.EstaAtivo })) EDesabilitado=@false />
+                            <HrhCheckbox EChecado=@data.EstaAtivo
+                                EChecadoChanged=@(async () => await OnPromptEstaAtivoColaboradorAsync(new BsnArgsPromptEstaAtivoColaborador { Id = data.Id, EstaAtivoAtual = !data.EstaAtivo }))
+                                EDesabilitado=@(!(ColaboradorLogadoAccessor.ColaboradorLogado?.Acessos?.Any(x => x.IdFuncionalidade == BsnFuncionalidadeLiterais.AtivarColaboradorId && x.EstaPermitido) ?? false)) />
                         </Template>
                     </RadzenDataGridColumn>
                 </Columns>
@@ -71,7 +78,7 @@
 </div>
 
 @code {
-    [CascadingParameter(Name = "SetRefColaboradorAsync")]
+    [CascadingParameter(Name = "SetRefColaboradorLogadoAsync")]
     public EventCallback<BsnColaboradorLogado> SetRefColaboradorLogadoAsync { get; set; }
     [CascadingParameter(Name = "SetMensagemDeAlerta")]
     public EventCallback<DetalhesMensagemDeAlertaViewModel> SetMensagemDeAlerta { get; set; }

@@ -87,6 +87,14 @@ a, .btn-link {
 }
 
 
+.bg-hrh-1-non-important {
+    background-color: var(--hrh-1);
+}
+.bg-hrh-1 {
+    background-color: var(--hrh-1) !important;
+}
+
+
 .text-hrh-texto-non-important {
     color: var(--hrh-texto);
 }
@@ -100,6 +108,14 @@ a, .btn-link {
 }
 .text-hrh-1 {
     color: var(--hrh-1) !important;
+}
+
+
+.text-hrh-fundo-non-important {
+    color: var(--hrh-fundo);
+}
+.text-hrh-fundo {
+    color: var(--hrh-fundo) !important;
 }
 
 

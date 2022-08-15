@@ -10,14 +10,13 @@ public interface IAppConfiguration
     string NomeColecFuncionalidade { get; }
     string NomeColecPresenca { get; }
     string NomeColecSolicitacaoAcesso { get; }
-    string NomeColecAcessoNaoAprovado { get; }
-    string NomeColecSolicitacaoExclusaoConta { get; }
-    string NomeColecSolicitacaoExclusaoPresenca { get; }
+    string NomeColecPermissaoAcessoPendente { get; }
     string NomeColecSolicitacaoNovaPresenca { get; }
-    string NomeColecTabela { get; }
-    string NomeColecColuna { get; }
+    string NomeColecSolicitacaoAlteracaoPresenca { get; }
+    string NomeColecSolicitacaoExclusaoPresenca { get; }
     string NomeColecLogValor { get; }
     string NomeColecRegistro { get; }
+    string NomeColecAlteracaoRegistro { get; }
     string LocalStoreKeyDoIdColaboradorLogado { get; }
     string HashPass { get; }
     SetgColaboradorAdmin ColaboradorAdmin { get; }
