@@ -8,4 +8,5 @@ public class BsnRelacaoDeColaborador
     public string Nome { get; set; } = "";
     public string Login { get; set; } = "";
     public bool EstaAtivo { get; set; }
+    public BsnArgsPromptEstaAtivoColaborador ArgsPromptEstaAtivo => new BsnArgsPromptEstaAtivoColaborador { Id = Id, EstaAtivoAtual = !EstaAtivo };
 }

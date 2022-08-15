@@ -54,8 +54,8 @@
                 Data="@relacoes" TItem="BsnRelacaoDeColaborador">
                 <Columns>
                     <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Property="Nome" Title="Nome" Frozen="true" Width="200px" />
-                    <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Property="Login" Title="Login" Width="140px"/>
-                    <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Title="Acessos">
+                    <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Property="Login" Title="Login" Width="150px"/>
+                    <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Title="Acessos" Width="150px">
                         <Template Context="data">
 
                         </Template>
@@ -63,7 +63,7 @@
                     <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Property="EstaAtivo" Title="Ativo" Width="50px">
                         <Template Context="data">
                             <HrhCheckbox EChecado=@data.EstaAtivo
-                                EChecadoChanged=@(async () => await OnPromptEstaAtivoColaboradorAsync(new BsnArgsPromptEstaAtivoColaborador { Id = data.Id, EstaAtivoAtual = !data.EstaAtivo }))
+                                EChecadoChanged=@(async () => await OnPromptEstaAtivoColaboradorAsync(data.ArgsPromptEstaAtivo))
                                 EDesabilitado=@(!(ColaboradorLogadoAccessor.ColaboradorLogado?.Acessos?.Any(x => x.IdFuncionalidade == BsnFuncionalidadeLiterais.AtivarColaboradorId && x.EstaPermitido) ?? false)) />
                         </Template>
                     </RadzenDataGridColumn>
@@ -72,7 +72,7 @@
         }
         else
         {
-            <div>A pesquisa não encontrou nenhuma relação.</div>
+            <div>@Message.PesquisaNaoEncontrouRelacao</div>
         }
     </div>
 </div>
@@ -142,28 +142,23 @@
             Titulo = Message.TituloAtencao,
             NomeDaClasseDeCssDoIcone = Message.IconePergunta,
             Mensagem = args.EstaAtivoAtual ? Message.TemCertezaAtivar : Message.TemCertezaInativar,
-            AcaoAposConfirmar = EventCallback.Factory.Create(this, async () => {
-                await LockUI.InvokeAsync(idAtivarInativar);
-                await Task.Yield();
-                BsnResult<object>? resultAtivarOuInativar = null;
-                if (args.EstaAtivoAtual)
-                {
-                    resultAtivarOuInativar = await ColaboradorBusiness.AtivarAsync(args.Id);
-                }
-                else
-                {
-                    resultAtivarOuInativar = await ColaboradorBusiness.InativarAsync(args.Id);
-                }
-                await SetMensagemDeAlerta.InvokeAsync(new DetalhesMensagemDeAlertaViewModel
-                {
-                    Titulo = Message.TituloAtencao,
-                    NomeDaClasseDeCssDoIcone = resultAtivarOuInativar.EstaOk ? Message.IconeSucesso : Message.IconeErro,
-                    Mensagem = resultAtivarOuInativar.Mensagem,
-                    AcaoAposFechar = EventCallback.Factory.Create(this, () => UriHelper.NavigateTo("/colaborador", true))
-                });
-                await UnlockUI.InvokeAsync(idAtivarInativar);
-            })
+            AcaoAposConfirmar = EventCallback.Factory.Create(this, async () => await AtivarInativarColaboradorAsync(args))
         });
+    }
+
+    public async Task AtivarInativarColaboradorAsync(BsnArgsPromptEstaAtivoColaborador args)
+    {
+        await LockUI.InvokeAsync(idAtivarInativar);
+        await Task.Yield();
+        var resultAtivarOuInativar = args.EstaAtivoAtual ? await ColaboradorBusiness.AtivarAsync(args.Id) : await ColaboradorBusiness.InativarAsync(args.Id);
+        await SetMensagemDeAlerta.InvokeAsync(new DetalhesMensagemDeAlertaViewModel
+        {
+            Titulo = Message.TituloAtencao,
+            NomeDaClasseDeCssDoIcone = resultAtivarOuInativar.EstaOk ? Message.IconeSucesso : Message.IconeErro,
+            Mensagem = resultAtivarOuInativar.Mensagem,
+            AcaoAposFechar = resultAtivarOuInativar.EstaOk ? EventCallback.Factory.Create(this, () => UriHelper.NavigateTo("/colaborador", true)) : null
+        });
+        await UnlockUI.InvokeAsync(idAtivarInativar);
     }
 
     private void ClickSolicitarNovoAcesso()

@@ -6,11 +6,14 @@
 @using Domain.Models.ViewModels
 @using Domain.Models
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+
 @inherits LayoutComponentBase
+
 @inject ProtectedLocalStorage ProtectedLocalStore
 @inject IAppConfiguration AppConfiguration
 @inject IColaboradorLogadoAccessor ColaboradorLogadoAccessor
 @inject IAutorizacaoBusiness AutorizacaoBusiness
+@inject IJSRuntime JSRuntime
 
 <PageTitle>HoraH</PageTitle>
 
@@ -24,13 +27,15 @@
             @if (hasRendered)
             {
                 <CascadingValue Value=@cascSetRefColaboradorLogadoAsync Name="SetRefColaboradorLogadoAsync">
-                    <CascadingValue Value=@cascSetMensagemDeAlerta Name="SetMensagemDeAlerta">
-                        <CascadingValue Value=@cascSetMensagemConfirmar Name="SetMensagemConfirmar">
-                            <CascadingValue Value=@cascLockUI Name="LockUI">
-                                <CascadingValue Value=@cascUnlockUI Name="UnlockUI">
-                                    <div class='col col-md-9 p-4'>
-                                        @Body
-                                    </div>
+                    <CascadingValue Value=@cascSairEFecharAsync Name="SairEFecharAsync">
+                        <CascadingValue Value=@cascSetMensagemDeAlerta Name="SetMensagemDeAlerta">
+                            <CascadingValue Value=@cascSetMensagemConfirmar Name="SetMensagemConfirmar">
+                                <CascadingValue Value=@cascLockUI Name="LockUI">
+                                    <CascadingValue Value=@cascUnlockUI Name="UnlockUI">
+                                        <div class='col col-md-9 p-4'>
+                                            @Body
+                                        </div>
+                                    </CascadingValue>
                                 </CascadingValue>
                             </CascadingValue>
                         </CascadingValue>
@@ -66,6 +71,8 @@
         }
         
     </main>
+
+    <Footer />
 
     @if (mensagemDeAlerta.EstaAberto)
     {
@@ -114,6 +121,11 @@
     public void VoltarParaTelaEntrar()
     {
         estaNaTelaEntrar = true;
+    }
+    public async Task SairEFecharAsync()
+    {
+        await ProtectedLocalStore.SetAsync(AppConfiguration.LocalStoreKeyDoIdColaboradorLogado, new BsnColaboradorLogado());
+        await JSRuntime.InvokeVoidAsync("close");
     }
     private BsnColaboradorLogado refColaboradorLogado = new BsnColaboradorLogado();
     public async Task SetRefColaboradorLogadoAsync(BsnColaboradorLogado upRefColaboradorLogado)
@@ -171,6 +183,7 @@
         }
     }
     public EventCallback<BsnColaboradorLogado> cascSetRefColaboradorLogadoAsync => EventCallback.Factory.Create<BsnColaboradorLogado>(this, SetRefColaboradorLogadoAsync);
+    public EventCallback cascSairEFecharAsync => EventCallback.Factory.Create(this, SairEFecharAsync);
     public EventCallback<DetalhesMensagemDeAlertaViewModel> cascSetMensagemDeAlerta => EventCallback.Factory.Create<DetalhesMensagemDeAlertaViewModel>(this, SetMensagemDeAlerta);
     public EventCallback<DetalhesMensagemConfirmarViewModel> cascSetMensagemConfirmar => EventCallback.Factory.Create<DetalhesMensagemConfirmarViewModel>(this, SetMensagemConfirmar);
     public EventCallback<string> cascLockUI => EventCallback.Factory.Create<string>(this, LockUI);
