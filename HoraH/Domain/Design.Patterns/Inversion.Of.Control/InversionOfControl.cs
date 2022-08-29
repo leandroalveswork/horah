@@ -45,7 +45,6 @@ public static class InversionOfControl
     
     public static IServiceCollection InjetarBusiness(this IServiceCollection services)
     {
-        services.AddScoped<IFuncionalidadeBusiness, FuncionalidadeBusiness>();
         services.AddScoped<IAutorizacaoBusiness, AutorizacaoBusiness>();
         services.AddScoped<IColaboradorBusiness, ColaboradorBusiness>();
         services.AddScoped<IDadosPadraoBusiness, DadosPadraoBusiness>();

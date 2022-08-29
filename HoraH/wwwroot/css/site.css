@@ -74,6 +74,7 @@ a, .btn-link {
 :root {
     --hrh-fundo: rgb(38, 38, 38);
     --hrh-texto: rgb(224, 224, 224);
+    --hrh-bloqueado: rgb(109, 109, 109);
     --hrh-1: rgb(116, 155, 214);
     --hrh-duracao: 150ms;
 }
@@ -116,6 +117,14 @@ a, .btn-link {
 }
 .text-hrh-fundo {
     color: var(--hrh-fundo) !important;
+}
+
+
+.text-hrh-bloqueado-non-important {
+    color: var(--hrh-bloqueado);
+}
+.text-hrh-bloqueado {
+    color: var(--hrh-bloqueado) !important;
 }
 
 
@@ -269,5 +278,10 @@ a, .btn-link {
 
 .onhover-text-hrh-1-non-important:hover {
     color: var(--hrh-1);
+    transition-duration: var(--hrh-duracao);
+}
+
+.onhover-text-hrh-texto-non-important:hover {
+    color: var(--hrh-texto);
     transition-duration: var(--hrh-duracao);
 }

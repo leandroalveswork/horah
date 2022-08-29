@@ -1,0 +1,248 @@
+{
+	// Place your horah workspace snippets here. Each snippet is defined under a snippet name and has a scope, prefix, body and 
+	// description. Add comma separated ids of the languages where the snippet is applicable in the scope field. If scope 
+	// is left empty or omitted, the snippet gets applied to all languages. The prefix is what is 
+	// used to trigger the snippet and the body will be expanded and inserted. Possible variables are: 
+	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. 
+	// Placeholders with the same ids are connected.
+	// Example:
+	// "Print to console": {
+	// 	"scope": "javascript,typescript",
+	// 	"prefix": "log",
+	// 	"body": [
+	// 		"console.log('$1');",
+	// 		"$2"
+	// 	],
+	// 	"description": "Log output to console"
+	// }
+	"WriteLine" : {
+		"scope": "csharp",
+		"prefix": "wln",
+		"body": "Console.WriteLine($1);$0"
+	},
+	"String constante": {
+		"scope": "csharp",
+		"prefix": "rdstr",
+		"body": [
+			"public static readonly string ${1:Titulo} = \"${2:Olá!}\";$0"
+		]
+	},
+	"Params em cascata": {
+		"scope": "csharp",
+		"prefix": "cstpr",
+		"body": [
+			"[CascadingParameter(Name = \"SetRefColaboradorLogadoAsync\")]",
+			"public EventCallback<BsnColaboradorLogado> SetRefColaboradorLogadoAsync { get; set; }",
+			"[CascadingParameter(Name = \"SairEFecharAsync\")]",
+			"public EventCallback SairEFecharAsync { get; set; }",
+			"[CascadingParameter(Name = \"SetMensagemDeAlerta\")]",
+			"public EventCallback<DetalhesMensagemDeAlertaViewModel> SetMensagemDeAlerta { get; set; }",
+			"[CascadingParameter(Name = \"SetMensagemConfirmar\")]",
+			"public EventCallback<DetalhesMensagemConfirmarViewModel> SetMensagemConfirmar { get; set; }",
+			"[CascadingParameter(Name = \"LockUI\")]",
+			"public EventCallback<string> LockUI { get; set; }",
+			"[CascadingParameter(Name = \"UnlockUI\")]",
+			"public EventCallback<string> UnlockUI { get; set; }"
+		]
+	},
+	"Inicialização Blazor": {
+		"scope": "csharp",
+		"prefix": "iniblz",
+		"body": [
+			"private bool deveCarregarDados = false;",
+			"protected override void OnInitialized()",
+			"{",
+			"    deveCarregarDados = true;",
+			"}",
+			"protected override void OnAfterRender(bool firstRender)",
+			"{",
+			"    if (deveCarregarDados)",
+			"    {",
+			"        $0",
+			"        deveCarregarDados = false;",
+			"        StateHasChanged();",
+			"    }",
+			"}"
+		]
+	},
+	"Inicialização Async": {
+		"scope": "csharp",
+		"prefix": "iniasync",
+		"body": [
+			"private bool deveCarregarDados = false;",
+			"protected override void OnInitialized()",
+			"{",
+			"    deveCarregarDados = true;",
+			"}",
+			"protected override async Task OnAfterRenderAsync(bool firstRender)",
+			"{",
+			"    if (deveCarregarDados)",
+			"    {",
+			"        $0",
+			"        deveCarregarDados = false;",
+			"        StateHasChanged();",
+			"    }",
+			"}"
+		]
+	},
+	"Variavel Lock": {
+		"scope": "csharp",
+		"prefix": "vlk",
+		"body": [
+			"private string id${1:Processo} = MongoId.NewMongoId;$0"
+		]
+	},
+	"Começar Lock": {
+		"scope": "csharp",
+		"prefix": "clk",
+		"body": [
+			"await LockUI.InvokeAsync(id${1:Processo});",
+			"await Task.Yield();$0"
+		]
+	},
+	"Terminar Lock": {
+		"scope": "csharp",
+		"prefix": "tlk",
+		"body": [
+			"await UnlockUI.InvokeAsync(id${1:Processo});$0"
+		]
+	},
+	"Popup Alerta Refresh": {
+		"scope": "csharp",
+		"prefix": "popalert",
+		"body": [
+			"await SetMensagemDeAlerta.InvokeAsync(new DetalhesMensagemDeAlertaViewModel",
+        	"{",
+        	"    Titulo = Message.TituloAtencao,",
+        	"    NomeDaClasseDeCssDoIcone = ${1:result}.EstaOk ? Message.IconeSucesso : Message.IconeErro,",
+        	"    Mensagem = ${1:result}.Mensagem,",
+        	"    AcaoAposFechar = ${1:result}.EstaOk ? EventCallback.Factory.Create(this, () => UriHelper.NavigateTo(\"/${2}\", true)) : null",
+        	"});$0",
+		]
+	},
+	"Abrir Confirmar": {
+		"scope": "csharp",
+		"prefix": "abcf",
+		"body": [
+			"public async Task AbrirConfirmar${1:Acao}Async(${2:TArgs} args)",
+			"{",
+			"    await SetMensagemConfirmar.InvokeAsync(new DetalhesMensagemConfirmarViewModel",
+			"    {",
+			"        Titulo = Message.TituloAtencao,",
+			"        NomeDaClasseDeCssDoIcone = Message.IconePergunta,",
+			"        Mensagem = $3",
+			"        AcaoAposConfirmar = EventCallback.Factory.Create(this, async () => await ${1:Acao}Async(args))",
+			"    });",
+			"}",
+			"public async Task ${1:Acao}Async(${2:TArgs} args)",
+    		"{",
+			"    $4",
+			"}$0"
+		]
+	},
+	"Interface Accessor": {
+		"scope": "csharp",
+		"prefix": "iaccs",
+		"body": [
+			"namespace HoraH.Domain.Interfaces.Accessor;",
+			"public interface I${1:Dado}Accessor",
+			"{",
+			"    ${1:Dado}? ${1:Dado} { get; set; }",
+			"}$0",
+		]
+	},
+	"Classe Accessor": {
+		"scope": "csharp",
+		"prefix": "caccs",
+		"body": [
+			"using HoraH.Domain.Interfaces.Accessor;",
+			"",
+			"namespace HoraH.Accessor;",
+			"public class ${1:Dado}Accessor : I${1:Dado}Accessor",
+			"{",
+			"    public ${1:Dado}? ${1:Dado} { get; set; }",
+			"}$0",
+		]
+	},
+	"Interface Repository": {
+		"scope": "csharp",
+		"prefix": "irepo",
+		"body": [
+			"using HoraH.Domain.Interfaces.Repository.Common;",
+			"using HoraH.Domain.Models.DbModels;",
+			"",
+			"namespace HoraH.Domain.Interfaces.Repository;",
+			"public interface I${1:Entidade}Repository : IRepositoryBase<${1:Entidade}DbModel>",
+			"{",
+			"    $0",
+			"}",
+		]
+	},
+	"Classe Repository": {
+		"scope": "csharp",
+		"prefix": "crepo",
+		"body": [
+			"using System.Linq.Expressions;",
+			"using HoraH.Domain.Interfaces.Accessor;",
+			"using HoraH.Domain.Interfaces.Configuration;",
+			"using HoraH.Domain.Interfaces.Repository;",
+			"using HoraH.Domain.Models.DbModels;",
+			"using HoraH.Repository.Common;",
+			"using MongoDB.Driver;",
+			"",
+			"namespace HoraH.Repository;",
+			"public class ${1:Entidade}Repository : RepositoryBase<${1:Entidade}DbModel>, I${1:Entidade}Repository",
+			"{",
+			"    public ${1:Entidade}Repository(IDbClientAccessor dbClientAccessor,",
+			"        IAppConfiguration appConfiguration,",
+			"        IDbSessionAccessor dbSessionAccessor)",
+			"        : base(dbClientAccessor, appConfiguration, dbSessionAccessor)",
+			"    {",
+			"    }",
+			"",
+			"    protected override string GetNomeColecEntidade()",
+			"    {",
+			"        return _appConfiguration.NomeColec${1:Entidade};",
+			"    }",
+			"",
+			"    protected override Expression<Func<${1:Entidade}DbModel, bool>> GetMatchesId(string id)",
+			"    {",
+			"        return x => x.Id == id;",
+			"    }",
+			"}",
+		]
+	},
+	"Item Literal": {
+		"scope": "csharp",
+		"prefix": "inlit",
+		"body": [
+			"public static readonly ${1:TLit} ${2:OlaMundo} = new ${1:TLit}",
+			"{",
+			"    Id = $3",
+			"};$0"
+		]
+	},
+	"Metodos de Literal": {
+		"scope": "csharp",
+		"prefix": "melit",
+		"body": [
+			"public static List<${1:TLit}> ListarTodos()",
+			"{",
+			"    return new List<${1:TLit}>",
+			"    {",
+			"        $2",
+			"    };",
+			"}",
+			"",
+			"public static ${1:TLit} GetById(string id)",
+			"{",
+			"    return ListarTodos().First(x => x.Id == id);",
+			"}",
+			"",
+			"public static ${1:TLit}? GetByIdOrDefault(string id)",
+			"{",
+			"    return ListarTodos().FirstOrDefault(x => x.Id == id);",
+			"}",
+		]
+	}
+}

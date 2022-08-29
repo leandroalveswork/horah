@@ -1,22 +1,74 @@
 namespace HoraH.Domain.Models.Bsn.Funcionalidade;
 public class BsnFuncionalidadeLiterais
 {
-    public static readonly string ListarColaboradorId = "1";
-    public static readonly string ListarColaborador = "Listar Colaborador";
-    public static readonly string AlterarAcessoId = "2";
-    public static readonly string AlterarAcesso = "Permitir/Bloquear Acesso";
-    public static readonly string AtivarColaboradorId = "3";
-    public static readonly string AtivarColaborador = "Ativar/Inativar Colaborador";
-    public static readonly string ListarLogId = "4";
-    public static readonly string ListarLog = "Listar Log";
-    public static readonly string MarcarPresencaId = "5";
-    public static readonly string MarcarPresenca = "Marcar Presença";
-    public static readonly string ListarPresencaId = "6";
-    public static readonly string ListarPresenca = "Listar Presença";
-    public static readonly string IncluirSolicitacaoId = "7";
-    public static readonly string IncluirSolicitacao = "Solicitar";
-    public static readonly string ListarSolicitacaoId = "8";
-    public static readonly string ListarSolicitacao = "Listar Solicitação";
-    public static readonly string AprovarSolicitacaoId = "9";
-    public static readonly string AprovarSolicitacao = "Aprovar/Reprovar Solicitação";
+    public static readonly BsnFuncionalidade ListarColaborador = new BsnFuncionalidade
+    {
+        Id = "1",
+        Nome = "Listar Colaborador"
+    };
+    public static readonly BsnFuncionalidade AlterarAcesso = new BsnFuncionalidade
+    {
+        Id = "2",
+        Nome = "Permitir/Bloquear Acesso"
+    };
+    public static readonly BsnFuncionalidade AtivarColaborador = new BsnFuncionalidade
+    {
+        Id = "3",
+        Nome = "Ativar/Inativar Colaborador"
+    };
+    public static readonly BsnFuncionalidade ListarLog = new BsnFuncionalidade
+    {
+        Id = "4",
+        Nome = "Listar Log"
+    };
+    public static readonly BsnFuncionalidade MarcarPresenca = new BsnFuncionalidade
+    {
+        Id = "5",
+        Nome = "Marcar Presença"
+    };
+    public static readonly BsnFuncionalidade ListarPresenca = new BsnFuncionalidade
+    {
+        Id = "6",
+        Nome = "Listar Presença"
+    };
+    public static readonly BsnFuncionalidade IncluirSolicitacao = new BsnFuncionalidade
+    {
+        Id = "7",
+        Nome = "Solicitar"
+    };
+    public static readonly BsnFuncionalidade ListarSolicitacao = new BsnFuncionalidade
+    {
+        Id = "8",
+        Nome = "Listar Solicitação"
+    };
+    public static readonly BsnFuncionalidade AprovarSolicitacao = new BsnFuncionalidade
+    {
+        Id = "9",
+        Nome = "Aprovar/Reprovar Solicitação"
+    };
+    public static List<BsnFuncionalidade> ListarTodos()
+    {
+        return new List<BsnFuncionalidade>
+        {
+            ListarColaborador,
+            AlterarAcesso,
+            AtivarColaborador,
+            ListarLog,
+            MarcarPresenca,
+            ListarPresenca,
+            IncluirSolicitacao,
+            ListarSolicitacao,
+            AprovarSolicitacao
+        };
+    }
+    
+    public static BsnFuncionalidade GetById(string id)
+    {
+        return ListarTodos().First(x => x.Id == id);
+    }
+    
+    public static BsnFuncionalidade? GetByIdOrDefault(string id)
+    {
+        return ListarTodos().FirstOrDefault(x => x.Id == id);
+    }
 }

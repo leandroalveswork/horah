@@ -8,6 +8,7 @@ using HoraH.Domain.Interfaces.UnitOfWork;
 using HoraH.Domain.Models;
 using HoraH.Domain.Models.Bsn;
 using HoraH.Domain.Models.Bsn.Autorizacao;
+using HoraH.Domain.Models.Bsn.Funcionalidade;
 using HoraH.Domain.Models.DbModels;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
@@ -17,20 +18,17 @@ public class AutorizacaoBusiness : IAutorizacaoBusiness
     private readonly IAppConfiguration _appConfiguration;
     private readonly IColaboradorLogadoAccessor _colaboradorLogadoAccessor;
     private readonly IColaboradorRepository _colaboradorRepository;
-    private readonly IFuncionalidadeBusiness _funcionalidadeBusiness;
     private readonly IAcessoRepository _acessoRepository;
     private readonly IUnitOfWork _uow;
     public AutorizacaoBusiness(IAppConfiguration appConfiguration,
                                IColaboradorLogadoAccessor colaboradorLogadoAccessor,
                                IColaboradorRepository colaboradorRepository,
-                               IFuncionalidadeBusiness funcionalidadeBusiness,
                                IAcessoRepository acessoRepository,
                                IUnitOfWork uow)
     {
         _appConfiguration = appConfiguration;
         _colaboradorLogadoAccessor = colaboradorLogadoAccessor;
         _colaboradorRepository = colaboradorRepository;
-        _funcionalidadeBusiness = funcionalidadeBusiness;
         _acessoRepository = acessoRepository;
         _uow = uow;
     }
@@ -79,7 +77,7 @@ public class AutorizacaoBusiness : IAutorizacaoBusiness
                     .Select(x => new BsnAcesso
                     {
                         IdFuncionalidade = x.IdFuncionalidade,
-                        Funcionalidade = _funcionalidadeBusiness.GetFuncionalidadePorId(x.IdFuncionalidade),
+                        Funcionalidade = BsnFuncionalidadeLiterais.GetById(x.IdFuncionalidade),
                         EstaPermitido = x.EstaPermitido
                     })
                     .ToList()
@@ -135,7 +133,7 @@ public class AutorizacaoBusiness : IAutorizacaoBusiness
                     .Select(x => new BsnAcesso
                     {
                         IdFuncionalidade = x.IdFuncionalidade,
-                        Funcionalidade = _funcionalidadeBusiness.GetFuncionalidadePorId(x.IdFuncionalidade),
+                        Funcionalidade = BsnFuncionalidadeLiterais.GetById(x.IdFuncionalidade),
                         EstaPermitido = x.EstaPermitido
                     })
                     .ToList()

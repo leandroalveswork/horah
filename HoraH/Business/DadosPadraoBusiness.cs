@@ -4,26 +4,24 @@ using HoraH.Domain.Interfaces.Repository;
 using HoraH.Domain.Interfaces.UnitOfWork;
 using HoraH.Domain.Models;
 using HoraH.Domain.Models.Bsn;
+using HoraH.Domain.Models.Bsn.Funcionalidade;
 using HoraH.Domain.Models.DbModels;
 
 namespace HoraH.Business;
 public class DadosPadraoBusiness : IDadosPadraoBusiness
 {
     private readonly IAppConfiguration _appConfiguration;
-    private readonly IFuncionalidadeBusiness _funcionalidadeBusiness;
     private readonly IColaboradorRepository _colaboradorRepository;
     private readonly IAcessoRepository _acessoRepository;
     private readonly IUnitOfWork _uow;
     private readonly IAutorizacaoBusiness _autorizacaoBusiness;
     public DadosPadraoBusiness(IAppConfiguration appConfiguration,
-                               IFuncionalidadeBusiness funcionalidadeBusiness,
                                IColaboradorRepository colaboradorRepository,
                                IAcessoRepository acessoRepository,
                                IUnitOfWork uow,
                                IAutorizacaoBusiness autorizacaoBusiness)
     {
         _appConfiguration = appConfiguration;
-        _funcionalidadeBusiness = funcionalidadeBusiness;
         _colaboradorRepository = colaboradorRepository;
         _acessoRepository = acessoRepository;
         _uow = uow;
@@ -33,7 +31,7 @@ public class DadosPadraoBusiness : IDadosPadraoBusiness
     private async Task CompletarAcessosDoAdminAsync(string idDoAdmin)
     {
         var acessosDoAdminDb = await _acessoRepository.SelectByIdDoColaboradorAsync(idDoAdmin);
-        foreach (var funcionalidadeDoSistema in _funcionalidadeBusiness.ListarFuncionalidadesDoSistema())
+        foreach (var funcionalidadeDoSistema in BsnFuncionalidadeLiterais.ListarTodos())
         {
             var acessoAFuncionalidade = acessosDoAdminDb.FirstOrDefault(x => x.IdFuncionalidade == funcionalidadeDoSistema.Id);
             if (acessoAFuncionalidade == null)

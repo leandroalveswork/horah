@@ -55,16 +55,21 @@
                 <Columns>
                     <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Property="Nome" Title="Nome" Frozen="true" Width="200px" />
                     <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Property="Login" Title="Login" Width="150px"/>
-                    <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Title="Acessos" Width="150px">
-                        <Template Context="data">
-
-                        </Template>
-                    </RadzenDataGridColumn>
+                    @if (ColaboradorLogadoAccessor.ColaboradorLogado.Acessos.Any(x => x.EstaPermitido && x.IdFuncionalidade == BsnFuncionalidadeLiterais.AlterarAcesso.Id))
+                    {
+                        <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Title="Acessos" Width="150px">
+                            <Template Context="data">
+                                <button class='p-2 border-non-important border-2 border-hrh-1 hrh-bg-inherit-non-important text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-texto-non-important' @onclick=@(() => NavegarParaManterAcessos(data.Id)) >
+                                    <span class='oi oi-pencil px-1'></span>
+                                </button>
+                            </Template>
+                        </RadzenDataGridColumn>
+                    }
                     <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Property="EstaAtivo" Title="Ativo" Width="50px">
                         <Template Context="data">
                             <HrhCheckbox EChecado=@data.EstaAtivo
-                                EChecadoChanged=@(async () => await OnPromptEstaAtivoColaboradorAsync(data.ArgsPromptEstaAtivo))
-                                EDesabilitado=@(!(ColaboradorLogadoAccessor.ColaboradorLogado?.Acessos?.Any(x => x.IdFuncionalidade == BsnFuncionalidadeLiterais.AtivarColaboradorId && x.EstaPermitido) ?? false)) />
+                                EChecadoChanged=@(async () => await AbrirConfirmarEstaAtivoColaboradorAsync(data.ArgsPromptEstaAtivo))
+                                EDesabilitado=@(!(ColaboradorLogadoAccessor.ColaboradorLogado?.Acessos?.Any(x => x.IdFuncionalidade == BsnFuncionalidadeLiterais.AtivarColaborador.Id && x.EstaPermitido) ?? false) || data.Id == ColaboradorLogadoAccessor.ColaboradorLogado.Id) />
                         </Template>
                     </RadzenDataGridColumn>
                 </Columns>
@@ -80,6 +85,8 @@
 @code {
     [CascadingParameter(Name = "SetRefColaboradorLogadoAsync")]
     public EventCallback<BsnColaboradorLogado> SetRefColaboradorLogadoAsync { get; set; }
+    [CascadingParameter(Name = "SairEFecharAsync")]
+    public EventCallback SairEFecharAsync { get; set; }
     [CascadingParameter(Name = "SetMensagemDeAlerta")]
     public EventCallback<DetalhesMensagemDeAlertaViewModel> SetMensagemDeAlerta { get; set; }
     [CascadingParameter(Name = "SetMensagemConfirmar")]
@@ -87,7 +94,7 @@
     [CascadingParameter(Name = "LockUI")]
     public EventCallback<string> LockUI { get; set; }
     [CascadingParameter(Name = "UnlockUI")]
-    public EventCallback<string> UnlockUI { get; set; }
+    public EventCallback<string> UnlockUI { get; set; }    
     private string? nome;
     private string? login;
     private string? estaAtivoSelecionado;
@@ -95,12 +102,22 @@
     private string idAtivarInativar = MongoId.NewMongoId;
     private List<BsnRelacaoDeColaborador> relacoes = new List<BsnRelacaoDeColaborador>();
 
-    protected override async Task OnInitializedAsync()
+    private bool deveCarregarDados = false;
+    protected override void OnInitialized()
     {
-        nome = "";
-        login = "";
-        estaAtivoSelecionado = HrhListaSuporteStrategy.BoolAnulavelParaValueDeOption(null);
-        await CarregarRelacoesAsync(BsnPesquisaDeColaborador.SemFiltro);
+        deveCarregarDados = true;
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (deveCarregarDados)
+        {
+            nome = "";
+            login = "";
+            estaAtivoSelecionado = HrhListaSuporteStrategy.BoolAnulavelParaValueDeOption(null);
+            await CarregarRelacoesAsync(BsnPesquisaDeColaborador.SemFiltro);
+            deveCarregarDados = false;
+            StateHasChanged();
+        }
     }
 
     public async Task CarregarRelacoesAsync(BsnPesquisaDeColaborador pesquisa)
@@ -126,7 +143,7 @@
     {
         await LockUI.InvokeAsync(idPesquisar);
         await Task.Yield();
-        await CarregarRelacoesAsync(new BsnPesquisaDeColaborador()
+        await CarregarRelacoesAsync(new BsnPesquisaDeColaborador
         {
             Nome = nome ?? "",
             Login = login ?? "",
@@ -135,7 +152,7 @@
         await UnlockUI.InvokeAsync(idPesquisar);
     }
 
-    public async Task OnPromptEstaAtivoColaboradorAsync(BsnArgsPromptEstaAtivoColaborador args)
+    public async Task AbrirConfirmarEstaAtivoColaboradorAsync(BsnArgsPromptEstaAtivoColaborador args)
     {
         await SetMensagemConfirmar.InvokeAsync(new DetalhesMensagemConfirmarViewModel
         {
@@ -169,5 +186,10 @@
     private void ClickSolicitarExclusao()
     {
         UriHelper.NavigateTo("", true);
+    }
+
+    public void NavegarParaManterAcessos(string idDoColaborador)
+    {
+        UriHelper.NavigateTo($"/colaborador/manterAcessos?id={idDoColaborador}", true);
     }
 }

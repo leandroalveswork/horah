@@ -14,14 +14,11 @@ using MongoDB.Driver;
 namespace HoraH.Repository;
 public class AcessoRepository : RepositoryBase<AcessoDbModel>, IAcessoRepository
 {
-    private readonly IFuncionalidadeBusiness _funcionalidadeBusiness;
     public AcessoRepository(IDbClientAccessor dbClientAccessor,
                             IAppConfiguration appConfiguration,
-                            IDbSessionAccessor dbSessionAccessor,
-                            IFuncionalidadeBusiness funcionalidadeBusiness)
+                            IDbSessionAccessor dbSessionAccessor)
         : base(dbClientAccessor, appConfiguration, dbSessionAccessor)
     {
-        _funcionalidadeBusiness = funcionalidadeBusiness;
     }
 
     protected override string GetNomeColecEntidade()
@@ -54,15 +51,15 @@ public class AcessoRepository : RepositoryBase<AcessoDbModel>, IAcessoRepository
     {
         return new List<AcessoDbModel>
         {
-            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.ListarColaboradorId, EstaPermitido = false },
-            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.AlterarAcessoId, EstaPermitido = false },
-            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.AtivarColaboradorId, EstaPermitido = false },
-            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.ListarLogId, EstaPermitido = false },
-            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.MarcarPresencaId, EstaPermitido = false },
-            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.ListarPresencaId, EstaPermitido = true },
-            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.IncluirSolicitacaoId, EstaPermitido = true },
-            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.ListarSolicitacaoId, EstaPermitido = false },
-            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.AprovarSolicitacaoId, EstaPermitido = false },
+            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.ListarColaborador.Id, EstaPermitido = false },
+            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.AlterarAcesso.Id, EstaPermitido = false },
+            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.AtivarColaborador.Id, EstaPermitido = false },
+            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.ListarLog.Id, EstaPermitido = false },
+            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.MarcarPresenca.Id, EstaPermitido = false },
+            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.ListarPresenca.Id, EstaPermitido = true },
+            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.IncluirSolicitacao.Id, EstaPermitido = true },
+            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.ListarSolicitacao.Id, EstaPermitido = false },
+            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.AprovarSolicitacao.Id, EstaPermitido = false },
         };
     }
 }
