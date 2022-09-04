@@ -23,4 +23,24 @@ public static class Uteis
         }
         return texto;
     }
+
+    public static string ExtrairQueryParamDeUrl(this string url, string key)
+    {
+        var divisaoPorInterrog = url.Split('?');
+        if (divisaoPorInterrog.Length < 2) {
+            return "";
+        }
+        var paramsDaUrl = divisaoPorInterrog[1];
+        var divisaoPorEComercial = paramsDaUrl.Split('&');
+        var paramComAKey = divisaoPorEComercial.FirstOrDefault(x => x.Contains(key + "="));
+        if (paramComAKey == null) {
+            return "";
+        }
+        var divisaoPorIgual = paramComAKey.Split('=');
+        if (divisaoPorIgual.Length < 2) {
+            return "";
+        }
+        var vlParam = divisaoPorIgual[1];
+        return vlParam;
+    }
 }

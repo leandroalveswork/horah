@@ -29,10 +29,23 @@
         @foreach (var acesso in acessos)
         {
             <div class='d-flex flex-row align-items-center col-12 col-md-6 px-2 pt-3'>
-                <HrhCheckbox EChecado=@acesso.EstaPermitido EDesabilitado=@(!(ColaboradorLogadoAccessor.ColaboradorLogado.Acessos.Any(x => x.EstaPermitido && x.IdFuncionalidade == BsnFuncionalidadeLiterais.AlterarAcessoId))) />
+                <HrhCheckbox @bind-EChecado=@acesso.EstaPermitido EDesabilitado=@(!(ColaboradorLogadoAccessor.ColaboradorLogado.Acessos.Any(x => x.EstaPermitido && x.IdFuncionalidade == BsnFuncionalidadeLiterais.AlterarAcesso.Id))) />
                 <label class='ps-2'>@acesso.Funcionalidade.Nome</label>
             </div>
         }
+    </div>
+    
+    <div class='row g-0 w-100 d-flex'>
+        <div class='d-flex flex-column col-6 px-2 pt-3'>
+            <button class='p-2 border-non-important border-2 border-danger hrh-bg-inherit-non-important h-100 text-danger-non-important onhover-bg-bs-danger-non-important onhover-text-hrh-fundo-non-important' @onclick="VoltarAsync" >
+                <span class='oi oi-x pe-2'></span>Cancelar
+            </button>
+        </div>
+        <div class='d-flex flex-column col-6 px-2 pt-3'>
+            <button class='p-2 border-non-important border-2 border-success hrh-bg-inherit-non-important h-100 text-success-non-important onhover-bg-bs-success-non-important onhover-text-hrh-fundo-non-important' @onclick="TrySalvarAsync" >
+                <span class='oi oi-check pe-2'></span>Salvar
+            </button>
+        </div>
     </div>
 </div>
 
@@ -49,42 +62,64 @@
     public EventCallback<string> LockUI { get; set; }
     [CascadingParameter(Name = "UnlockUI")]
     public EventCallback<string> UnlockUI { get; set; }
+    [CascadingParameter(Name = "VoltarAsync")]
+    public EventCallback VoltarAsync { get; set; }
     private string? nome;
     private string? idColaborador;
     private List<BsnAcesso> acessos = new List<BsnAcesso>();
-    private string idAlterarDados = MongoId.NewMongoId;
-    private string idInativacao = MongoId.NewMongoId;
+    private string idSalvar = MongoId.NewMongoId;
 
     private bool deveCarregarDados = false;
     protected override void OnInitialized()
     {
         deveCarregarDados = true;
     }
-    protected override void OnAfterRender(bool firstRender)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (deveCarregarDados)
         {
-            nome = ColaboradorLogadoAccessor.ColaboradorLogado.Nome;
-            idColaborador = HrhUriStrategy.PegarParametroAsString(UriHelper, "id");
-            Console.WriteLine(idColaborador);
-            acessos = ColaboradorLogadoAccessor.ColaboradorLogado.Acessos;
+            await CarregarDadosAsync();
             deveCarregarDados = false;
             StateHasChanged();
         }
     }
-
-    public async Task SubmitAlterarAsync()
+    private async Task CarregarDadosAsync()
     {
-        await LockUI.InvokeAsync(idAlterarDados);
-        await Task.Yield();
-        var bsnAlterarConta = new BsnAlterarConta()
+        idColaborador = UriHelper.Uri.ExtrairQueryParamDeUrl("id");
+        if (idColaborador == null)
         {
-            Nome = nome ?? "",
-            Login = login ?? "",
-            Senha = senha ?? "",
-            ConfirmarSenha = confirmarSenha ?? ""
-        };
-        var result = await AutorizacaoBusiness.AlterarColaboradorAsync(bsnAlterarConta);
+            return;
+        }
+        var resColaborador = await ColaboradorBusiness.ObterPorIdAsync(idColaborador);
+        if (!resColaborador.EstaOk)
+        {
+            await SetMensagemDeAlerta.InvokeAsync(new DetalhesMensagemDeAlertaViewModel
+            {
+                Titulo = Message.TituloAtencao,
+                NomeDaClasseDeCssDoIcone = Message.IconeErro,
+                Mensagem = resColaborador.Mensagem
+            });
+            return;
+        }
+        nome = resColaborador.Resultado.Nome;
+        var resAcessos = await ColaboradorBusiness.ObterAcessosDoColaboradorAsync(idColaborador);
+        if (!resAcessos.EstaOk)
+        {
+            await SetMensagemDeAlerta.InvokeAsync(new DetalhesMensagemDeAlertaViewModel
+            {
+                Titulo = Message.TituloAtencao,
+                NomeDaClasseDeCssDoIcone = Message.IconeErro,
+                Mensagem = resAcessos.Mensagem
+            });
+        }
+        acessos = resAcessos.Resultado;
+    }
+
+    public async Task TrySalvarAsync()
+    {
+        await LockUI.InvokeAsync(idSalvar);
+        await Task.Yield();
+        var result = await ColaboradorBusiness.AlterarAcessosAsync(idColaborador, acessos);
         if (!result.EstaOk)
         {
             var mensagemDeAlerta = new DetalhesMensagemDeAlertaViewModel()
@@ -94,48 +129,16 @@
                 Mensagem = result.Mensagem
             };
             await SetMensagemDeAlerta.InvokeAsync(mensagemDeAlerta);
-            await UnlockUI.InvokeAsync(idAlterarDados);
+            await UnlockUI.InvokeAsync(idSalvar);
             return;
         }
-        await SetRefColaboradorLogadoAsync.InvokeAsync(ColaboradorLogadoAccessor.ColaboradorLogado);
         await SetMensagemDeAlerta.InvokeAsync(new DetalhesMensagemDeAlertaViewModel()
         {
             Titulo = Message.TituloAtencao,
             NomeDaClasseDeCssDoIcone = Message.IconeSucesso,
             Mensagem = result.Mensagem,
-            AcaoAposFechar = EventCallback.Factory.Create(this, () => UriHelper.NavigateTo("/conta", true))
+            AcaoAposFechar = EventCallback.Factory.Create(this, () => UriHelper.NavigateTo("/colaborador", true))
         });
-        await UnlockUI.InvokeAsync(idAlterarDados);
-    }
-
-    private void NavegarParaSolicitarNovoAcesso()
-    {
-        UriHelper.NavigateTo("", true);
-    }
-
-    public async Task PerguntarInativarAsync()
-    {
-        await SetMensagemConfirmar.InvokeAsync(new DetalhesMensagemConfirmarViewModel
-        {
-            Titulo = Message.TituloAtencao,
-            NomeDaClasseDeCssDoIcone = Message.IconePergunta,
-            Mensagem = Message.TemCertezaInativarConta,
-            AcaoAposConfirmar = EventCallback.Factory.Create(this, async () => await InativarAsync())
-        });
-    }
-
-    public async Task InativarAsync()
-    {
-        await LockUI.InvokeAsync(idInativacao);
-        await Task.Yield();
-        var resultInativacao = await ColaboradorBusiness.InativarAsync(ColaboradorLogadoAccessor.ColaboradorLogado.Id);
-        await SetMensagemDeAlerta.InvokeAsync(new DetalhesMensagemDeAlertaViewModel
-        {
-            Titulo = Message.TituloAtencao,
-            NomeDaClasseDeCssDoIcone = resultInativacao.EstaOk ? Message.IconeSucesso : Message.IconeErro,
-            Mensagem = resultInativacao.Mensagem,
-            AcaoAposFechar = resultInativacao.EstaOk ? EventCallback.Factory.Create(this, async () => await SairEFecharAsync.InvokeAsync()) : null
-        });
-        await UnlockUI.InvokeAsync(idInativacao);
+        await UnlockUI.InvokeAsync(idSalvar);
     }
 }

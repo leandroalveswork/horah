@@ -32,9 +32,11 @@
                             <CascadingValue Value=@cascSetMensagemConfirmar Name="SetMensagemConfirmar">
                                 <CascadingValue Value=@cascLockUI Name="LockUI">
                                     <CascadingValue Value=@cascUnlockUI Name="UnlockUI">
-                                        <div class='col col-md-9 p-4'>
-                                            @Body
-                                        </div>
+                                        <CascadingValue Value=@cascVoltarAsync Name="VoltarAsync">
+                                            <div class='col col-md-9 p-4'>
+                                                @Body
+                                            </div>
+                                        </CascadingValue>
                                     </CascadingValue>
                                 </CascadingValue>
                             </CascadingValue>
@@ -127,6 +129,10 @@
         await ProtectedLocalStore.SetAsync(AppConfiguration.LocalStoreKeyDoIdColaboradorLogado, new BsnColaboradorLogado());
         await JSRuntime.InvokeVoidAsync("close");
     }
+    public async Task VoltarAsync()
+    {
+        await JSRuntime.InvokeVoidAsync("mdlHistory.historyBack");
+    }
     private BsnColaboradorLogado refColaboradorLogado = new BsnColaboradorLogado();
     public async Task SetRefColaboradorLogadoAsync(BsnColaboradorLogado upRefColaboradorLogado)
     {
@@ -188,6 +194,7 @@
     public EventCallback<DetalhesMensagemConfirmarViewModel> cascSetMensagemConfirmar => EventCallback.Factory.Create<DetalhesMensagemConfirmarViewModel>(this, SetMensagemConfirmar);
     public EventCallback<string> cascLockUI => EventCallback.Factory.Create<string>(this, LockUI);
     public EventCallback<string> cascUnlockUI => EventCallback.Factory.Create<string>(this, UnlockUI);
+    public EventCallback cascVoltarAsync => EventCallback.Factory.Create(this, VoltarAsync);
     public bool hasRendered = false;
 
 }

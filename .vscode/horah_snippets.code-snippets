@@ -42,7 +42,9 @@
 			"[CascadingParameter(Name = \"LockUI\")]",
 			"public EventCallback<string> LockUI { get; set; }",
 			"[CascadingParameter(Name = \"UnlockUI\")]",
-			"public EventCallback<string> UnlockUI { get; set; }"
+			"public EventCallback<string> UnlockUI { get; set; }",
+			"[CascadingParameter(Name = \"VoltarAsync\")]",
+			"public EventCallback VoltarAsync { get; set; }"
 		]
 	},
 	"Inicialização Blazor": {
