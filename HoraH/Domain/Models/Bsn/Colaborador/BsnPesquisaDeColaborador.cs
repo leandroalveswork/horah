@@ -1,7 +1,5 @@
-using HoraH.Domain.Models.Bsn.Common;
-
 namespace HoraH.Domain.Models.Bsn.Colaborador;
-public class BsnPesquisaDeColaborador : BsnPesquisaBase
+public class BsnPesquisaDeColaborador
 {
     public string? Nome { get; set; }
     public string? Login { get; set; }

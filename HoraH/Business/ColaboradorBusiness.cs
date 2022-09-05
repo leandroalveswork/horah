@@ -8,7 +8,6 @@ using HoraH.Domain.Models;
 using HoraH.Domain.Models.Bsn;
 using HoraH.Domain.Models.Bsn.Autorizacao;
 using HoraH.Domain.Models.Bsn.Colaborador;
-using HoraH.Domain.Models.Bsn.Common;
 using HoraH.Domain.Models.Bsn.Funcionalidade;
 using HoraH.Domain.Models.DbModels;
 

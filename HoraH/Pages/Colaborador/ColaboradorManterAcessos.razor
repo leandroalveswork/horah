@@ -4,6 +4,7 @@
 @using Domain.Interfaces.Accessor
 @using Domain.Interfaces.Repository
 @using Domain.Interfaces.Business
+@using Domain.Interfaces.Configuration
 @using Domain.Models.Bsn
 @using Domain.Models.Bsn.Autorizacao
 @using Domain.Models.Bsn.Funcionalidade
@@ -12,6 +13,7 @@
 @inject IColaboradorLogadoAccessor ColaboradorLogadoAccessor
 @inject IAutorizacaoBusiness AutorizacaoBusiness
 @inject IColaboradorBusiness ColaboradorBusiness
+@inject IAppConfiguration AppConfiguration
 @inject NavigationManager UriHelper
 @inject IJSRuntime JSRuntime
 
@@ -29,7 +31,7 @@
         @foreach (var acesso in acessos)
         {
             <div class='d-flex flex-row align-items-center col-12 col-md-6 px-2 pt-3'>
-                <HrhCheckbox @bind-EChecado=@acesso.EstaPermitido EDesabilitado=@(!(ColaboradorLogadoAccessor.ColaboradorLogado.Acessos.Any(x => x.EstaPermitido && x.IdFuncionalidade == BsnFuncionalidadeLiterais.AlterarAcesso.Id))) />
+                <HrhCheckbox @bind-EChecado=@acesso.EstaPermitido EDesabilitado=@(!ColaboradorLogadoAccessor.ColaboradorLogado.TemPermissaoPara(BsnFuncionalidadeLiterais.AlterarAcesso) || eVisualizacao || idColaborador == ColaboradorLogadoAccessor.ColaboradorLogado.Id || AppConfiguration.ColaboradorAdmin.Login == login) />
                 <label class='ps-2'>@acesso.Funcionalidade.Nome</label>
             </div>
         }
@@ -37,15 +39,18 @@
     
     <div class='row g-0 w-100 d-flex'>
         <div class='d-flex flex-column col-6 px-2 pt-3'>
-            <button class='p-2 border-non-important border-2 border-danger hrh-bg-inherit-non-important h-100 text-danger-non-important onhover-bg-bs-danger-non-important onhover-text-hrh-fundo-non-important' @onclick="VoltarAsync" >
-                <span class='oi oi-x pe-2'></span>Cancelar
+            <button class='p-2 border-non-important border-2 border-hrh-texto hrh-bg-inherit-non-important h-100 text-hrh-texto-non-important onhover-bg-hrh-texto-non-important onhover-text-hrh-fundo-non-important' @onclick="VoltarAsync" >
+                <span class='oi oi-arrow-left pe-2'></span>Voltar
             </button>
         </div>
-        <div class='d-flex flex-column col-6 px-2 pt-3'>
-            <button class='p-2 border-non-important border-2 border-success hrh-bg-inherit-non-important h-100 text-success-non-important onhover-bg-bs-success-non-important onhover-text-hrh-fundo-non-important' @onclick="TrySalvarAsync" >
-                <span class='oi oi-check pe-2'></span>Salvar
-            </button>
-        </div>
+        @if (ColaboradorLogadoAccessor.ColaboradorLogado.TemPermissaoPara(BsnFuncionalidadeLiterais.AlterarAcesso) && !eVisualizacao && idColaborador != ColaboradorLogadoAccessor.ColaboradorLogado.Id && AppConfiguration.ColaboradorAdmin.Login != login)
+        {
+            <div class='d-flex flex-column col-6 px-2 pt-3'>
+                <button class='p-2 border-non-important border-2 border-success hrh-bg-inherit-non-important h-100 text-success-non-important onhover-bg-bs-success-non-important onhover-text-hrh-fundo-non-important' @onclick="TrySalvarAsync" >
+                    <span class='oi oi-check pe-2'></span>Salvar
+                </button>
+            </div>
+        }
     </div>
 </div>
 
@@ -65,7 +70,9 @@
     [CascadingParameter(Name = "VoltarAsync")]
     public EventCallback VoltarAsync { get; set; }
     private string? nome;
+    private string? login;
     private string? idColaborador;
+    private bool eVisualizacao;
     private List<BsnAcesso> acessos = new List<BsnAcesso>();
     private string idSalvar = MongoId.NewMongoId;
 
@@ -86,6 +93,7 @@
     private async Task CarregarDadosAsync()
     {
         idColaborador = UriHelper.Uri.ExtrairQueryParamDeUrl("id");
+        eVisualizacao = UriHelper.Uri.ExtrairQueryParamDeUrl("eVisualizacao") == "" || UriHelper.Uri.ExtrairQueryParamDeUrl("eVisualizacao") == "S";
         if (idColaborador == null)
         {
             return;
@@ -102,6 +110,7 @@
             return;
         }
         nome = resColaborador.Resultado.Nome;
+        login = resColaborador.Resultado.Login;
         var resAcessos = await ColaboradorBusiness.ObterAcessosDoColaboradorAsync(idColaborador);
         if (!resAcessos.EstaOk)
         {

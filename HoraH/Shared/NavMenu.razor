@@ -1,5 +1,10 @@
 ﻿@using Domain.Models.Bsn
 @using Domain.Models.Bsn.Autorizacao
+@using Domain.Interfaces.Accessor
+@using Domain.Models.Bsn.Funcionalidade
+
+@inject IColaboradorLogadoAccessor ColaboradorLogadoAccessor
+
 <nav class="d-flex flex-column border-non-important border-top-0 border-start-0 border-bottom-0 border-2 border-hrh-1 h-100">
     <div class="d-flex">
         <NavLink href="" class='text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-fundo-non-important text-decoration-none w-100 px-3 py-2' @onclick="@(() => SetNavToggled.InvokeAsync(false))">
@@ -11,17 +16,23 @@
             <span class="oi oi-cog pe-2" aria-hidden="true"></span> Conta
         </NavLink>
     </div>
-    <div class="d-flex">
-        <NavLink href="colaborador" class='text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-fundo-non-important text-decoration-none w-100 px-3 py-2'  @onclick="@(() => SetNavToggled.InvokeAsync(false))">
-            <span class="oi oi-person pe-2" aria-hidden="true"></span> Colaborador
-        </NavLink>
-    </div>
-    
-    <div class="d-flex">
-        <NavLink href="fetchdata" class='text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-fundo-non-important text-decoration-none w-100 px-3 py-2'  @onclick="@(() => SetNavToggled.InvokeAsync(false))">
-            <span class="oi oi-task pe-2" aria-hidden="true"></span> Presença
-        </NavLink>
-    </div>
+    @if (ColaboradorLogadoAccessor.ColaboradorLogado.TemPermissaoPara(BsnFuncionalidadeLiterais.ListarColaborador))
+    {
+        <div class="d-flex">
+            <NavLink href="colaborador" class='text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-fundo-non-important text-decoration-none w-100 px-3 py-2'  @onclick="@(() => SetNavToggled.InvokeAsync(false))">
+                <span class="oi oi-person pe-2" aria-hidden="true"></span> Colaborador
+            </NavLink>
+        </div>
+    }
+    @if (ColaboradorLogadoAccessor.ColaboradorLogado.TemPermissaoPara(BsnFuncionalidadeLiterais.ListarPresenca) ||
+        ColaboradorLogadoAccessor.ColaboradorLogado.TemPermissaoPara(BsnFuncionalidadeLiterais.MarcarPresenca))
+    {
+        <div class="d-flex">
+            <NavLink href="presenca" class='text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-fundo-non-important text-decoration-none w-100 px-3 py-2'  @onclick="@(() => SetNavToggled.InvokeAsync(false))">
+                <span class="oi oi-task pe-2" aria-hidden="true"></span> Presença
+            </NavLink>
+        </div>
+    }
     
     <div class="d-flex">
         <NavLink href="fetchdata" class='text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-fundo-non-important text-decoration-none w-100 px-3 py-2'  @onclick="@(() => SetNavToggled.InvokeAsync(false))">

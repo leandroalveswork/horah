@@ -1,4 +1,4 @@
-@page "/colaborador"
+@page "/presenca"
 
 @using Domain.Design.Patterns.Strategy
 @using Domain.Models
@@ -21,26 +21,18 @@
 @inject IAppConfiguration AppConfiguration
 @inject NavigationManager UriHelper
 
-<PageTitle>Colaborador</PageTitle>
+<PageTitle>Presença</PageTitle>
 
 <div class='d-flex flex-column'>
-    <h1>Colaborador Index</h1>
+    <h1>Presença Index</h1>
     <div class='row g-0 w-100 d-flex'>
         <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
-            <label>Nome</label>
+            <label>Nome Colaborador</label>
             <input type='text' @bind="nome" />
         </div>
         <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
-            <label>Login</label>
+            <label>Login Colaborador</label>
             <input type='text' @bind="login" />
-        </div>
-        <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
-            <label>Ativo</label>
-            <select @bind="estaAtivoSelecionado">
-                <option value="@HrhListaSuporteStrategy.BoolAnulavelParaValueDeOption(null)">Selecione...</option>
-                <option value="@HrhListaSuporteStrategy.BoolAnulavelParaValueDeOption(true)">Sim</option>
-                <option value="@HrhListaSuporteStrategy.BoolAnulavelParaValueDeOption(false)">Não</option>
-            </select>
         </div>
         <div class='d-flex flex-column col-12 px-2 pt-3'>
             <button class='p-2 border-non-important border-2 border-hrh-1 hrh-bg-inherit-non-important h-100 text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-fundo-non-important' @onclick="SubmitPesquisarAsync" >

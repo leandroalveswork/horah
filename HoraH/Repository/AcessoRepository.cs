@@ -52,6 +52,7 @@ public class AcessoRepository : RepositoryBase<AcessoDbModel>, IAcessoRepository
         return new List<AcessoDbModel>
         {
             new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.ListarColaborador.Id, EstaPermitido = false },
+            new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.ListarAcesso.Id, EstaPermitido = false },
             new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.AlterarAcesso.Id, EstaPermitido = false },
             new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.AtivarColaborador.Id, EstaPermitido = false },
             new AcessoDbModel { Id = MongoId.NewMongoId, IdColaborador = idColaborador, IdFuncionalidade = BsnFuncionalidadeLiterais.ListarLog.Id, EstaPermitido = false },

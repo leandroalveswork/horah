@@ -1,7 +1,6 @@
 using HoraH.Domain.Models.Bsn;
 using HoraH.Domain.Models.Bsn.Autorizacao;
 using HoraH.Domain.Models.Bsn.Colaborador;
-using HoraH.Domain.Models.Bsn.Common;
 
 namespace HoraH.Domain.Interfaces.Business;
 public interface IColaboradorBusiness
