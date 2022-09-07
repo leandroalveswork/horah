@@ -1,4 +1,5 @@
 using HoraH.Domain.Models.Bsn.Evento;
+using HoraH.Domain.Models.Bsn.Presenca.TipoInterseccao;
 using HoraH.Domain.Models.DbModels;
 
 namespace HoraH.Domain.Models.Bsn.Presenca;
@@ -9,13 +10,7 @@ public class BsnIntervaloDeTempo
 
     public BsnIntervaloDeTempo? InterseccaoOrDefault(BsnIntervaloDeTempo outroIntervalo)
     {
-        var maiorInicio = Inicio > outroIntervalo.Inicio ? Inicio : outroIntervalo.Inicio;
-        var menorFim = Fim < outroIntervalo.Fim ? Fim : outroIntervalo.Fim;
-        if (menorFim < maiorInicio)
-        {
-            return null;
-        }
-        return new BsnIntervaloDeTempo { Inicio = maiorInicio, Fim = menorFim };
+        return BsnTipoInterseccaoLiterais.ObterPorDoisIntervalos(this, outroIntervalo).ObterInterseccao(this, outroIntervalo);
     }
 
     public static List<BsnIntervaloDeTempo> ObterIntervalosExpediente(List<PresencaDbModel> presencasDb)
