@@ -4,5 +4,5 @@ public class BsnEvento
     public string Id { get; set; } = "";
     public string Nome { get; set; } = "";
     public bool EInicioTrabalho { get; set; }
-    public bool EEventoDeIntervalo { get; set; }
+    public bool EEventoStop { get; set; }
 }

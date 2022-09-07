@@ -1,9 +1,11 @@
+using HoraH.Domain.Models.Bsn.Presenca;
+
 namespace HoraH.Domain.Models.Bsn.Mes;
 public class BsnMesLiterais
 {
     public static readonly BsnMes Jan = new BsnMes
     {
-        Id = "1", Sigla = "Jan", Nome = "Janeiro"
+        Id = "1", Sigla = "Jan", Nome = "Janeiro",
     };
     public static readonly BsnMes Fev = new BsnMes
     {

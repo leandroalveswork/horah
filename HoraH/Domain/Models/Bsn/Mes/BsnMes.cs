@@ -1,3 +1,5 @@
+using HoraH.Domain.Models.Bsn.Presenca;
+
 namespace HoraH.Domain.Models.Bsn.Mes;
 public class BsnMes
 {

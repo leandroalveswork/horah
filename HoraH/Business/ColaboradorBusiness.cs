@@ -10,6 +10,7 @@ using HoraH.Domain.Models.Bsn.Autorizacao;
 using HoraH.Domain.Models.Bsn.Colaborador;
 using HoraH.Domain.Models.Bsn.Funcionalidade;
 using HoraH.Domain.Models.DbModels;
+using HoraH.Domain.Models.LinqExp;
 
 namespace HoraH.Business;
 public class ColaboradorBusiness : IColaboradorBusiness
@@ -34,18 +35,32 @@ public class ColaboradorBusiness : IColaboradorBusiness
 
     public async Task<BsnResult<List<BsnRelacaoDeColaborador>>> PesquisarAsync(BsnPesquisaDeColaborador bsnPesquisa)
     {
-        var colaboradores = await _colaboradorRepository.SelectAllAsync();
-        var relacoesDeColaborador = HrhFiltradorAnulavel.FiltrarPeloTexto(colaboradores, x => x.Nome.ToLower().Trim().RemoverAcentuacao(), bsnPesquisa.Nome?.ToLower()?.Trim()?.RemoverAcentuacao());
-        relacoesDeColaborador = HrhFiltradorAnulavel.FiltrarPeloTexto(relacoesDeColaborador, x => x.Login.ToLower().Trim().RemoverAcentuacao(), bsnPesquisa.Login?.ToLower()?.Trim()?.RemoverAcentuacao());
-        relacoesDeColaborador = HrhFiltradorAnulavel.FiltrarPeloPredicate(relacoesDeColaborador, x => x.EstaAtivo == bsnPesquisa.EstaAtivo, bsnPesquisa.EstaAtivo);
+        var linqExpFiltro = new LinqExpModel<ColaboradorDbModel>();
+        if (bsnPesquisa.EstaAtivo.HasValue)
+        {
+            linqExpFiltro.AppendAndAlso(x => x.EstaAtivo == bsnPesquisa.EstaAtivo.Value);
+        }
+        var colaboradoresDb = await _colaboradorRepository.SelectByLinqExpModelAsync(linqExpFiltro);
+        if (!string.IsNullOrWhiteSpace(bsnPesquisa.Nome))
+        {
+            colaboradoresDb = colaboradoresDb
+                .Where(x => x.Nome.ToLower().Trim().RemoverAcentuacao().Contains(bsnPesquisa.Nome.ToLower().Trim().RemoverAcentuacao()))
+                .ToList();
+        }
+        if (!string.IsNullOrWhiteSpace(bsnPesquisa.Login))
+        {
+            colaboradoresDb = colaboradoresDb
+                .Where(x => x.Login.ToLower().Trim().RemoverAcentuacao().Contains(bsnPesquisa.Login.ToLower().Trim().RemoverAcentuacao()))
+                .ToList();
+        }
         return BsnResult<List<BsnRelacaoDeColaborador>>.OkConteudo(
-            relacoesDeColaborador
-                .Select(colb => new BsnRelacaoDeColaborador
+            colaboradoresDb
+                .Select(colaboradorDb => new BsnRelacaoDeColaborador
                 {
-                    Id = colb.Id,
-                    Nome = colb.Nome,
-                    Login = colb.Login,
-                    EstaAtivo = colb.EstaAtivo
+                    Id = colaboradorDb.Id,
+                    Nome = colaboradorDb.Nome,
+                    Login = colaboradorDb.Login,
+                    EstaAtivo = colaboradorDb.EstaAtivo
                 })
                 .ToList()
         );

@@ -25,4 +25,34 @@ public class PresencaRepository : RepositoryBase<PresencaDbModel>, IPresencaRepo
     {
         return x => x.Id == id;
     }
+
+    public async Task<List<PresencaDbModel>> SelectEntreColaboradoresEPorEventoAsync(List<string> idsColaborador, string? idEvento)
+    {
+        var session = _dbSessionAccessor.DbSession;
+        if (session == null)
+        {
+            var presencas = await GetCollection().Find(x => idsColaborador.Contains(x.IdColaborador) && x.IdEvento == idEvento).ToListAsync();
+            return presencas;
+        }
+        else
+        {
+            var presencas = await GetCollection().Find(session, x => idsColaborador.Contains(x.IdColaborador) && x.IdEvento == idEvento).ToListAsync();
+            return presencas;
+        }
+    }
+
+    public async Task<List<PresencaDbModel>> SelectPorEventoAsync(string? idEvento)
+    {
+        var session = _dbSessionAccessor.DbSession;
+        if (session == null)
+        {
+            var presencas = await GetCollection().Find(x => x.IdEvento == idEvento).ToListAsync();
+            return presencas;
+        }
+        else
+        {
+            var presencas = await GetCollection().Find(session, x => x.IdEvento == idEvento).ToListAsync();
+            return presencas;
+        }
+    }
 }

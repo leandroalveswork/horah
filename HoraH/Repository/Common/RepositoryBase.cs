@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using HoraH.Domain.Interfaces.Accessor;
 using HoraH.Domain.Interfaces.Configuration;
 using HoraH.Domain.Interfaces.Repository.Common;
+using HoraH.Domain.Models.LinqExp;
 using MongoDB.Driver;
 
 namespace HoraH.Repository.Common;
@@ -29,10 +30,15 @@ public class RepositoryBase<T> : IRepositoryBase<T>
 
     protected IMongoCollection<T> GetCollection()
     {
+        return GetCollectionSpecific<T>(GetNomeColecEntidade());
+    }
+
+    protected IMongoCollection<TDb> GetCollectionSpecific<TDb>(string nomeCollection)
+    {
         _dbClientAccessor.ConnectIfNull();
         var client = _dbClientAccessor.DbClient;
         var database = client.GetDatabase(_appConfiguration.NomeBD);
-        var collection = database.GetCollection<T>(GetNomeColecEntidade());
+        var collection = database.GetCollection<TDb>(nomeCollection);
         return collection;
     }
 
@@ -63,6 +69,21 @@ public class RepositoryBase<T> : IRepositoryBase<T>
         else
         {
             var entity = await GetCollection().Find(session, GetMatchesId(id)).FirstOrDefaultAsync();
+            return entity;
+        }
+    }
+
+    public async Task<List<T>> SelectByLinqExpModelAsync(LinqExpModel<T> linqExpMd)
+    {
+        var session = _dbSessionAccessor.DbSession;
+        if (session == null)
+        {
+            var entity = await GetCollection().Find(linqExpMd.AsFullfilledExpression()).ToListAsync();
+            return entity;
+        }
+        else
+        {
+            var entity = await GetCollection().Find(session, linqExpMd.AsFullfilledExpression()).ToListAsync();
             return entity;
         }
     }

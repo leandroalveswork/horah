@@ -43,4 +43,30 @@ public static class Uteis
         var vlParam = divisaoPorIgual[1];
         return vlParam;
     }
+    
+    public static string RemoverAcentuacao(this string texto)
+    {
+        if (texto == null)
+        {
+            return "";
+        }
+        var comAcento = "áàãâäéèêëíìîïóòõôöúùûüñÁÀÃÂÄÉÈÊËÍÌÎÏÓÒÕÔÖÚÙÛÜÑ";
+        var semAcento = "aaaaaeeeeiiiiooooouuuunAAAAAEEEEIIIIOOOOOUUUUN";
+        var textoSemAcentos = texto;
+        for (var i = 0; i < comAcento.Length; i++)
+        {
+            textoSemAcentos = textoSemAcentos.Replace(comAcento[i], semAcento[i]);
+        }
+        return textoSemAcentos;
+    }
+
+    public static int ArredondarParaBaixo(this double numero)
+    {
+        return Convert.ToInt32(Math.Floor(numero));
+    }
+    
+    public static int ArredondarParaCima(this double numero)
+    {
+        return Convert.ToInt32(Math.Ceiling(numero));
+    }
 }

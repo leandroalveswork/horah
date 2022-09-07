@@ -6,6 +6,7 @@ using HoraH.Domain.Models.Bsn.Colaborador;
 using HoraH.Domain.Models.Bsn.Evento;
 using HoraH.Domain.Models.Bsn.Presenca;
 using HoraH.Domain.Models.DbModels;
+using HoraH.Domain.Models.LinqExp;
 
 namespace HoraH.Business;
 public class PresencaBusiness : IPresencaBusiness
@@ -17,86 +18,73 @@ public class PresencaBusiness : IPresencaBusiness
         _presencaRepository = presencaRepository;
         _colaboradorBusiness = colaboradorBusiness;
     }
-    public async Task<BsnResult<List<BsnRelacaoDeHorasTrabalhadas>>> PesquisarAsync(BsnPesquisaDePresenca bsnPesquisa)
+
+    public async Task<BsnResult<List<BsnRelacaoDeHorasDoColaborador>>> PesquisarAsync(IBsnPesquisaDePresenca bsnPesquisa)
     {
-        var presencas = await _presencaRepository.SelectAllAsync();
-        var resColaboradoresComONome = await _colaboradorBusiness.PesquisarAsync(new BsnPesquisaDeColaborador { Nome = bsnPesquisa.NomeColaborador, EstaAtivo = true });
-        if (!resColaboradoresComONome.EstaOk)
+        var linqExpFiltro = new LinqExpModel<PresencaDbModel>();
+        var filtroColaboradores = new BsnPesquisaDeColaborador { Nome = bsnPesquisa.NomeColaborador, EstaAtivo = true };
+        var resColaboradoresRelac = await _colaboradorBusiness.PesquisarAsync(filtroColaboradores);
+        if (!resColaboradoresRelac.EstaOk)
         {
-            return BsnResult<List<BsnRelacaoDeHorasTrabalhadas>>.Erro(resColaboradoresComONome.Mensagem);
+            return BsnResult<List<BsnRelacaoDeHorasDoColaborador>>.Erro(resColaboradoresRelac.Mensagem);
         }
-        var idsColaboradoresComONome = new HashSet<string>(resColaboradoresComONome.Resultado.Select(x => x.Id));
-        var relacoesDePresencas = presencas.Where(x => idsColaboradoresComONome.Contains(x.IdColaborador));
-        if (!string.IsNullOrEmpty(bsnPesquisa.IdEvento))
+        if (!string.IsNullOrWhiteSpace(bsnPesquisa.NomeColaborador))
         {
-            relacoesDePresencas = relacoesDePresencas.Where(x => x.IdEvento == bsnPesquisa.IdEvento);
+            var idsColaboradores = resColaboradoresRelac.Resultado.Select(x => x.Id).ToList();
+            linqExpFiltro.AppendAndAlso(x => idsColaboradores.Contains(x.IdColaborador));
         }
-        var relacoesDeHorasTrabalhadas = relacoesDePresencas.GroupBy(x => x.HoraMarcada.ToString("yyyyMMdd") + "|" + x.IdColaborador)
-            .Select(relacoesDePresencasGrp => new BsnRelacaoDeHorasTrabalhadas
+        if (bsnPesquisa.IdEvento != null)
+        {
+            linqExpFiltro.AppendAndAlso(x => x.IdEvento == bsnPesquisa.IdEvento);
+        }
+        var presencasDb = await _presencaRepository.SelectByLinqExpModelAsync(linqExpFiltro);
+        var gruposPresencasPorColaborador = presencasDb.GroupBy(x => x.IdColaborador);
+        var relacoesHorasTrabalhadas = new List<BsnRelacaoDeHorasDoColaborador>();
+        foreach (var iGrupoPresencas in gruposPresencasPorColaborador)
+        {
+            var intervalosExpediente = BsnIntervaloDeTempo.ObterIntervalosExpediente(iGrupoPresencas.ToList());
+            var intervalosStop = BsnIntervaloDeTempo.ObterIntervalosStop(iGrupoPresencas.ToList());
+            var diasRelacao = intervalosExpediente.SelectMany(x => new [] { x.Inicio.Date, x.Fim.Date })
+                .Concat(intervalosStop.SelectMany(x => new [] { x.Inicio.Date, x.Fim.Date }))
+                .Distinct()
+                .Where(x => bsnPesquisa.DateEValido(x));
+            var iRelacaoHorasTrabalhadas = new BsnRelacaoDeHorasDoColaborador
             {
-                IdColaborador = relacoesDePresencasGrp.First().IdColaborador,
-                NomeColaborador = resColaboradoresComONome.Resultado.First(x => relacoesDePresencasGrp.First().IdColaborador == x.Id).Nome,
-                MinutosTrabalhados = ObterMinutosTrabalhados(relacoesDePresencasGrp),
-                Dia = relacoesDePresencasGrp.First().HoraMarcada.Date,
-                PresencasNoDia = relacoesDePresencasGrp.Select(relacDePresenca => new BsnRelacaoDePresenca
+                IdColaborador = iGrupoPresencas.Key,
+                NomeColaborador = resColaboradoresRelac.Resultado.First(x => x.Id == iGrupoPresencas.Key).Nome,
+                DiasTrabalhados = new List<BsnRelacaoDoDiaTrabalhado>()
+            };
+            foreach (var iDiaRelacao in diasRelacao)
+            {
+                var iRelacaoDiaTrabalhado = new BsnRelacaoDoDiaTrabalhado { Dia = iDiaRelacao };
+                var intervaloDia = iRelacaoDiaTrabalhado.ObterIntervaloDia();
+                iRelacaoDiaTrabalhado.PresencasDoDia = iGrupoPresencas
+                    .Where(x => intervaloDia.Inicio <= x.HoraMarcada && x.HoraMarcada < intervaloDia.Fim)
+                    .Select(presencaDb => new BsnRelacaoDePresenca
+                    {
+                        Id = presencaDb.Id,
+                        IdColaborador = presencaDb.IdColaborador,
+                        NomeColaborador = iRelacaoHorasTrabalhadas.NomeColaborador,
+                        IdEvento = presencaDb.IdEvento,
+                        HoraMarcada = presencaDb.HoraMarcada
+                    })
+                    .ToList();
+                iRelacaoDiaTrabalhado.CalcularMinutosTrabalhados(intervalosExpediente, intervalosStop);
+                if (bsnPesquisa.MinutosTrabalhadosMinimo.HasValue && iRelacaoDiaTrabalhado.MinutosTrabalhados < bsnPesquisa.MinutosTrabalhadosMinimo.Value)
                 {
-                    Id = relacDePresenca.Id,
-                    IdColaborador = relacDePresenca.IdColaborador,
-                    NomeColaborador = resColaboradoresComONome.Resultado.First(x => relacDePresenca.IdColaborador == x.Id).Nome,
-                    IdEvento = relacDePresenca.IdEvento,
-                    HoraMarcada = relacDePresenca.HoraMarcada
-                }).ToList()
-            });
-        relacoesDeHorasTrabalhadas = HrhFiltradorAnulavel.FiltrarPeloPredicate(relacoesDeHorasTrabalhadas, x => x.MinutosTrabalhados >= bsnPesquisa.MinutosTrabalhadosMinimo, bsnPesquisa.MinutosTrabalhadosMinimo);
-        relacoesDeHorasTrabalhadas = HrhFiltradorAnulavel.FiltrarPeloPredicate(relacoesDeHorasTrabalhadas, x => x.MinutosTrabalhados >= bsnPesquisa.MinutosTrabalhadosMaximo, bsnPesquisa.MinutosTrabalhadosMaximo);
-        relacoesDeHorasTrabalhadas = relacoesDeHorasTrabalhadas.Where(x => bsnPesquisa.PesquisaPorPeriodo.RelacaoObedeceOsFiltros(x));
-        return BsnResult<List<BsnRelacaoDeHorasTrabalhadas>>.OkConteudo(relacoesDeHorasTrabalhadas.ToList());
-    }
-
-    private int ObterMinutosTrabalhados(IGrouping<string, PresencaDbModel> relacaoHoras)
-    {
-        var totalMinutos = 0;
-        foreach (var iInicioExpediente in relacaoHoras.Where(x => x.IdEvento == BsnEventoLiterais.InicioExpediente.Id))
-        {
-            var fimExpediente = relacaoHoras.FirstOrDefault(x => x.IdEvento == BsnEventoLiterais.FimExpediente.Id && x.HoraMarcada > iInicioExpediente.HoraMarcada);
-            if (fimExpediente == null)
-            {
-                break;
+                    continue;
+                }
+                if (bsnPesquisa.MinutosTrabalhadosMaximo.HasValue && iRelacaoDiaTrabalhado.MinutosTrabalhados > bsnPesquisa.MinutosTrabalhadosMaximo.Value)
+                {
+                    continue;
+                }
+                iRelacaoHorasTrabalhadas.DiasTrabalhados.Add(iRelacaoDiaTrabalhado);
             }
-            var tempoTrabalhado = fimExpediente.HoraMarcada - iInicioExpediente.HoraMarcada;
-            var intervalos = ObterIntervalosQueInterceptam(relacaoHoras, iInicioExpediente.HoraMarcada, fimExpediente.HoraMarcada);
-            foreach (var iIntervalo in intervalos)
+            if (!bsnPesquisa.FoiInformadoIntervaloMinutosTrabalhados || iRelacaoHorasTrabalhadas.DiasTrabalhados.Any())
             {
-                tempoTrabalhado -= iIntervalo.ObterTempoEmComum(iInicioExpediente.HoraMarcada, fimExpediente.HoraMarcada);
-            }
-            totalMinutos += Convert.ToInt32(Math.Floor(tempoTrabalhado.TotalMinutes));
-        }
-        return totalMinutos;
-    }
-
-    private IEnumerable<BsnIntervaloDeTempo> ObterIntervalosQueInterceptam(IEnumerable<PresencaDbModel> presencas, DateTime tInicio, DateTime tFim)
-    {
-        var idsFimIntervalo = new HashSet<string>();
-        var intervalosTotal = new List<BsnIntervaloDeTempo>();
-        foreach (var iInicioIntervalo in presencas)
-        {
-            var eInicioIntervalo = BsnEventoLiterais.GetById(iInicioIntervalo.IdEvento).EEventoDeIntervalo && !BsnEventoLiterais.GetById(iInicioIntervalo.IdEvento).EInicioTrabalho;
-            if (!eInicioIntervalo)
-            {
-                continue;
-            }
-            var fimIntervalo = presencas.FirstOrDefault(x => BsnEventoLiterais.GetById(iInicioIntervalo.IdEvento).EEventoDeIntervalo && BsnEventoLiterais.GetById(iInicioIntervalo.IdEvento).EInicioTrabalho && x.HoraMarcada > iInicioIntervalo.HoraMarcada);
-            if (fimIntervalo == null || idsFimIntervalo.Contains(fimIntervalo.Id)) 
-            {
-                continue;
-            }
-            var novoIntervaloAdd = new BsnIntervaloDeTempo { Inicio = iInicioIntervalo.HoraMarcada, Fim = fimIntervalo.HoraMarcada };
-            if (novoIntervaloAdd.ObterTempoEmComum(tInicio, tFim) > TimeSpan.Zero)
-            {
-                idsFimIntervalo.Add(fimIntervalo.Id);
-                intervalosTotal.Add(novoIntervaloAdd);
+                relacoesHorasTrabalhadas.Add(iRelacaoHorasTrabalhadas);
             }
         }
-        return intervalosTotal;
+        return BsnResult<List<BsnRelacaoDeHorasDoColaborador>>.OkConteudo(relacoesHorasTrabalhadas);
     }
 }
