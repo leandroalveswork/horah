@@ -10,10 +10,15 @@ public class BsnPesquisaDePresencaPorMes : IBsnPesquisaDePresenca
     public int? MinutosTrabalhadosMaximo { get; set; }
     public bool FoiInformadoIntervaloMinutosTrabalhados => MinutosTrabalhadosMinimo.HasValue && MinutosTrabalhadosMaximo.HasValue;
     public string? IdMes { get; set; }
+    public int? Ano { get; set; }
     public static BsnPesquisaDePresencaPorMes SemFiltro => new BsnPesquisaDePresencaPorMes();
 
     public bool DateEValido(DateTime dateVlr)
     {
-        return string.IsNullOrEmpty(IdMes) || BsnMesLiterais.GetByHoraAsDateTime(dateVlr).Id == IdMes;
+        if (!string.IsNullOrEmpty(IdMes) && BsnMesLiterais.GetByHoraAsDateTime(dateVlr).Id != IdMes)
+        {
+            return false;
+        }
+        return !Ano.HasValue || dateVlr.Year == Ano.Value;
     }
 }

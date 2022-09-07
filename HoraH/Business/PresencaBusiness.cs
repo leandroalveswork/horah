@@ -80,7 +80,7 @@ public class PresencaBusiness : IPresencaBusiness
                 }
                 iRelacaoHorasTrabalhadas.DiasTrabalhados.Add(iRelacaoDiaTrabalhado);
             }
-            if (!bsnPesquisa.FoiInformadoIntervaloMinutosTrabalhados || iRelacaoHorasTrabalhadas.DiasTrabalhados.Any())
+            if (iRelacaoHorasTrabalhadas.DiasTrabalhados.Any())
             {
                 relacoesHorasTrabalhadas.Add(iRelacaoHorasTrabalhadas);
             }
