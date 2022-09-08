@@ -17,12 +17,12 @@
 	// }
 	"WriteLine" : {
 		"scope": "csharp",
-		"prefix": "wln",
+		"prefix": "hrhwln",
 		"body": "Console.WriteLine($1);$0"
 	},
 	"String constante": {
 		"scope": "csharp",
-		"prefix": "rdstr",
+		"prefix": "hrhrdstr",
 		"body": [
 			"public static readonly string ${1:Titulo} = \"${2:Olá!}\";$0"
 		]
@@ -216,7 +216,7 @@
 	},
 	"Classe DbModel": {
 		"scope": "csharp",
-		"prefix": "dbmodel",
+		"prefix": "hrhdbmodel",
 		"body": [
 			"using MongoDB.Bson;",
 			"using MongoDB.Bson.Serialization.Attributes;",
@@ -233,7 +233,7 @@
 	},
 	"Item Literal": {
 		"scope": "csharp",
-		"prefix": "inlit",
+		"prefix": "hrhinlit",
 		"body": [
 			"public static readonly ${1:TLit} ${2:OlaMundo} = new ${1:TLit}",
 			"{",
@@ -243,7 +243,7 @@
 	},
 	"Metodos de Literal": {
 		"scope": "csharp",
-		"prefix": "melit",
+		"prefix": "hrhmelit",
 		"body": [
 			"public static List<${1:TLit}> ListarTodos()",
 			"{",

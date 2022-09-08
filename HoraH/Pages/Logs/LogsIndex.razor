@@ -1,6 +1,80 @@
 @using Domain.Models.Bsn.Autorizacao
+@using Domain.Models.Bsn.Logs
 @using Domain.Models.ViewModels
 
+
+<PageTitle>Logs</PageTitle>
+
+<div class='d-flex flex-column'>
+    <h1>Logs Index</h1>
+    <div class='row g-0 w-100 d-flex'>
+        <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
+            <label>Nome</label>
+            <input type='text' @bind="nome" />
+        </div>
+        <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
+            <label>Login</label>
+            <input type='text' @bind="login" />
+        </div>
+        <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
+            <label>Ativo</label>
+            <select @bind="estaAtivoSelecionado">
+                <option value="">Selecione...</option>
+                <option value="@HrhListaSuporteStrategy.BoolAnulavelParaValueDeOption(true)">Sim</option>
+                <option value="@HrhListaSuporteStrategy.BoolAnulavelParaValueDeOption(false)">Não</option>
+            </select>
+        </div>
+        <div class='d-flex flex-column col-12 px-2 pt-3'>
+            <button class='p-2 border-non-important border-2 border-hrh-1 hrh-bg-inherit-non-important h-100 text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-fundo-non-important' @onclick="SubmitPesquisarAsync" >
+                <span class='oi oi-search pe-2'></span>Pesquisar
+            </button>
+        </div>
+    </div>
+    <h1 class='pt-3'>Colaboradores</h1>
+    <div class='row g-0 w-100 d-flex mt-3'>
+        @if (relacoes.Any())
+        {
+            <RadzenDataGrid AllowColumnResize="true" AllowSorting="true" PageSize="5" AllowPaging="true"
+                Data="@relacoes" TItem="BsnRelacaoDeColaborador">
+                <Columns>
+                    <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Property="Nome" Title="Nome" Frozen="true" Width="200px" />
+                    <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Property="Login" Title="Login" Width="150px"/>
+                    @if (ColaboradorLogadoAccessor.ColaboradorLogado.TemPermissaoPara(BsnFuncionalidadeLiterais.ListarAcesso) || 
+                        ColaboradorLogadoAccessor.ColaboradorLogado.TemPermissaoPara(BsnFuncionalidadeLiterais.AlterarAcesso))
+                    {
+                        <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Title="Acessos" Width="150px">
+                            <Template Context="data">
+                                @if (ColaboradorLogadoAccessor.ColaboradorLogado.TemPermissaoPara(BsnFuncionalidadeLiterais.ListarAcesso))
+                                {
+                                    <button class='p-2 me-2 border-non-important border-2 border-hrh-1 hrh-bg-inherit-non-important text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-texto-non-important' @onclick=@(() => NavegarParaManterAcessos(data.Id, true)) >
+                                        <span class='oi oi-eye px-1'></span>
+                                    </button>
+                                }
+                                @if (ColaboradorLogadoAccessor.ColaboradorLogado.TemPermissaoPara(BsnFuncionalidadeLiterais.AlterarAcesso) && data.Id != ColaboradorLogadoAccessor.ColaboradorLogado.Id && AppConfiguration.ColaboradorAdmin.Login != data.Login)
+                                {
+                                    <button class='p-2 border-non-important border-2 border-hrh-1 hrh-bg-inherit-non-important text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-texto-non-important' @onclick=@(() => NavegarParaManterAcessos(data.Id, false)) >
+                                        <span class='oi oi-pencil px-1'></span>
+                                    </button>
+                                }
+                            </Template>
+                        </RadzenDataGridColumn>
+                    }
+                    <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Property="EstaAtivo" Title="Ativo" Width="50px">
+                        <Template Context="data">
+                            <HrhCheckbox EChecado=@data.EstaAtivo
+                                EChecadoChanged=@(async () => await AbrirConfirmarEstaAtivoColaboradorAsync(data.ArgsPromptEstaAtivo))
+                                EDesabilitado=@(!ColaboradorLogadoAccessor.ColaboradorLogado.TemPermissaoPara(BsnFuncionalidadeLiterais.AtivarColaborador) || data.Id == ColaboradorLogadoAccessor.ColaboradorLogado.Id) />
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
+        }
+        else
+        {
+            <div>@Message.PesquisaNaoEncontrouRelacao</div>
+        }
+    </div>
+</div>
 
 
 @code {
@@ -18,6 +92,14 @@
     public EventCallback<string> UnlockUI { get; set; }
     [CascadingParameter(Name = "VoltarAsync")]
     public EventCallback VoltarAsync { get; set; }
+    private string? nomeColaborador;
+    private string? idOperacao;
+    private string? idTabela;
+    private DateTime? dataInicio;
+    private DateTime? dataFim;
+
+    private List<BsnRelacaoDeLog> relacoes = new List<BsnRelacaoDeLog>();
+
 
     private bool deveCarregarDados = false;
     protected override void OnInitialized()
