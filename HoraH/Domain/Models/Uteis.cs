@@ -24,6 +24,17 @@ public static class Uteis
         return texto;
     }
 
+    public static string AsTotalHorasFormatted(this int minutos)
+    {
+        var horasStr = (minutos / 60.0).ArredondarParaBaixo();
+        var minutosStr = minutos % 60;
+        if (horasStr == 0)
+        {
+            return minutosStr + "min";
+        }
+        return horasStr + "h " + minutosStr + "min";
+    }
+
     public static string ExtrairQueryParamDeUrl(this string url, string key)
     {
         var divisaoPorInterrog = url.Split('?');

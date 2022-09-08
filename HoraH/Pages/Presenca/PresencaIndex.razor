@@ -100,26 +100,51 @@
     </div>
     <h1 class='pt-3'>Presenças</h1>
     <div class='w-100 mt-3'>
-        @if (true)
+        @if (relacoesPresencas.Any())
         {
-            <table class='w-100'>
-                <thead class='w-100'>
-                    <tr class='w-100'>
-                        <th class='p-2 border-non-important border-start-0 border-top-0 border-2 border-hrh-1 hrh-bg-inherit-non-important h-100 text-hrh-1-non-important'>...</th>
-                        <th class='p-2 border-non-important border-start-0 border-top-0 border-2 border-hrh-1 hrh-bg-inherit-non-important h-100 text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-fundo-non-important onhover-pointer-non-important'>Nome Colaborador</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var iRelacaoColaboradorViewModel in relacoesViewModel)
-                    {
-                        <tr>
-                            <td class='p-2 border-non-important border-start-0 border-top-0 border-2 border-hrh-texto hrh-bg-inherit-non-important h-100 text-hrh-texto-non-important'><HrhExpand @bind-EExpandido=@(iRelacaoColaboradorViewModel.TemDiasExpandido) EDesabilitado=@false /></td>
-                            <td class='p-2 border-non-important border-start-0 border-top-0 border-2 border-hrh-texto hrh-bg-inherit-non-important h-100 text-hrh-texto-non-important'>@iRelacaoColaboradorViewModel.NomeColaborador</td>
-                        </tr>
-                    }
-                </tbody>
+            <RadzenDataGrid AllowColumnResize="true" AllowSorting="true" PageSize="10" AllowPaging="true"
+                Data="@relacoesPresencas" TItem="BsnRelacaoDePresenca">
+                <Columns>
+                    <RadzenDataGridColumn TItem="BsnRelacaoDePresenca" Property="NomeColaborador" Title="Colaborador" Frozen="true" Width="200px" />
+                    <RadzenDataGridColumn TItem="BsnRelacaoDePresenca" Property="IdEvento" Title="Evento" Width="200px">
+                        <Template Context="data">
+                            <span class='p-2'>@(BsnEventoLiterais.GetById(data.IdEvento).Nome)</span>
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="BsnRelacaoDePresenca" Property="HoraMarcada" Title="Data e Hora" Width="100px">
+                        <Template Context="data">
+                            <span class='p-2'>@(data.HoraMarcada.ToString("HH:mm:ss - dd/MM/yyyy"))</span>
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
 
-            </table>
+        }
+        else
+        {
+            <div>@Message.PesquisaNaoEncontrouRelacao</div>
+        }
+    </div>
+    <h1 class='pt-3'>Banco Horas</h1>
+    <div class='w-100 mt-3'>
+        @if (relacoesDiaTotal.Any())
+        {
+            <RadzenDataGrid AllowColumnResize="true" AllowSorting="true" PageSize="10" AllowPaging="true"
+                Data="@relacoesDiaTotal" TItem="BsnRelacaoDoDiaTrabalhado">
+                <Columns>
+                    <RadzenDataGridColumn TItem="BsnRelacaoDoDiaTrabalhado" Property="NomeColaborador" Title="Colaborador" Frozen="true" Width="200px" />
+                    <RadzenDataGridColumn TItem="BsnRelacaoDoDiaTrabalhado" Property="Dia" Title="Data" Width="200px">
+                        <Template Context="data">
+                            <span class='p-2'>@data.Dia.ToString("dd/MM/yyyy")</span>
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="BsnRelacaoDoDiaTrabalhado" Property="MinutosTrabalhados" Title="Total Horas" Width="100px">
+                        <Template Context="data">
+                            <span class='p-2'>@(data.MinutosTrabalhados.AsTotalHorasFormatted())</span>
+                        </Template>
+                    </RadzenDataGridColumn>
+                </Columns>
+            </RadzenDataGrid>
         }
         else
         {
@@ -159,6 +184,8 @@
     private string idPesquisar = MongoId.NewMongoId;
     private List<BsnRelacaoDeHorasDoColaborador> relacoes = new List<BsnRelacaoDeHorasDoColaborador>();
     private List<RelacaoDeHorasViewModel> relacoesViewModel = new List<RelacaoDeHorasViewModel>();
+    private List<BsnRelacaoDePresenca> relacoesPresencas = new List<BsnRelacaoDePresenca>();
+    private List<BsnRelacaoDoDiaTrabalhado> relacoesDiaTotal = new List<BsnRelacaoDoDiaTrabalhado>();
 
     private bool deveCarregarDados = false;
     protected override void OnInitialized()
@@ -186,11 +213,13 @@
 
     public async Task CarregarRelacoesAsync(IBsnPesquisaDePresenca pesquisa)
     {
-        var resultRelacoes = await PresencaBusiness.PesquisarAsync(pesquisa);
+        var resultRelacoes = await PresencaBusiness.PesquisarAsync(pesquisa, TimeZoneInfo.Local);
         if (resultRelacoes.EstaOk)
         {
             relacoes = resultRelacoes.Resultado;
             relacoesViewModel = relacoes.Select(x => RelacaoDeHorasViewModel.FromBsnRelacao(x)).ToList();
+            relacoesDiaTotal = relacoes.SelectMany(x => x.DiasTrabalhados).ToList();
+            relacoesPresencas = relacoesDiaTotal.SelectMany(x => x.PresencasDoDia).ToList();
         }
         else
         {

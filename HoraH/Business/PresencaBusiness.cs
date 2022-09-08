@@ -23,7 +23,7 @@ public class PresencaBusiness : IPresencaBusiness
         _colaboradorLogadoAccessor = colaboradorLogadoAccessor;
     }
 
-    public async Task<BsnResult<List<BsnRelacaoDeHorasDoColaborador>>> PesquisarAsync(IBsnPesquisaDePresenca bsnPesquisa)
+    public async Task<BsnResult<List<BsnRelacaoDeHorasDoColaborador>>> PesquisarAsync(IBsnPesquisaDePresenca bsnPesquisa, TimeZoneInfo timeZone)
     {
         var resValidacao = bsnPesquisa.ValidarRanges();
         if (!resValidacao.EstaOk)
@@ -51,9 +51,9 @@ public class PresencaBusiness : IPresencaBusiness
         var relacoesHorasTrabalhadas = new List<BsnRelacaoDeHorasDoColaborador>();
         foreach (var iGrupoPresencas in gruposPresencasPorColaborador)
         {
-            var intervalosExpediente = BsnIntervaloDeTempo.ObterIntervalosExpediente(iGrupoPresencas.ToList());
-            var intervalosStop = BsnIntervaloDeTempo.ObterIntervalosStop(iGrupoPresencas.ToList());
-            var diasRelacao = iGrupoPresencas.Select(x => x.HoraMarcada.Date).Where(x => bsnPesquisa.DateEValido(x));
+            var intervalosExpediente = BsnIntervaloDeTempo.ObterIntervalosExpediente(iGrupoPresencas.ToList(), timeZone);
+            var intervalosStop = BsnIntervaloDeTempo.ObterIntervalosStop(iGrupoPresencas.ToList(), timeZone);
+            var diasRelacao = iGrupoPresencas.Select(x => BsnDateTimeModel.FromDb(x.HoraMarcada, timeZone).Value.Date).Distinct().Where(x => bsnPesquisa.DateEValido(x));
             var iRelacaoHorasTrabalhadas = new BsnRelacaoDeHorasDoColaborador
             {
                 IdColaborador = iGrupoPresencas.Key,
@@ -65,14 +65,14 @@ public class PresencaBusiness : IPresencaBusiness
                 var iRelacaoDiaTrabalhado = new BsnRelacaoDoDiaTrabalhado { Dia = iDiaRelacao };
                 var intervaloDia = iRelacaoDiaTrabalhado.ObterIntervaloDia();
                 iRelacaoDiaTrabalhado.PresencasDoDia = iGrupoPresencas
-                    .Where(x => intervaloDia.Inicio <= x.HoraMarcada && x.HoraMarcada < intervaloDia.Fim)
+                    .Where(x => intervaloDia.Inicio <= BsnDateTimeModel.FromDb(x.HoraMarcada, timeZone).Value && BsnDateTimeModel.FromDb(x.HoraMarcada, timeZone).Value < intervaloDia.Fim)
                     .Select(presencaDb => new BsnRelacaoDePresenca
                     {
                         Id = presencaDb.Id,
                         IdColaborador = presencaDb.IdColaborador,
                         NomeColaborador = iRelacaoHorasTrabalhadas.NomeColaborador,
                         IdEvento = presencaDb.IdEvento,
-                        HoraMarcada = presencaDb.HoraMarcada
+                        HoraMarcada = BsnDateTimeModel.FromDb(presencaDb.HoraMarcada, timeZone).Value
                     })
                     .ToList();
                 iRelacaoDiaTrabalhado.CalcularMinutosTrabalhados(intervalosExpediente, intervalosStop);

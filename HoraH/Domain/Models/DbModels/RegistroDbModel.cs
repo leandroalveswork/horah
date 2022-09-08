@@ -12,4 +12,13 @@ public class RegistroDbModel
     public bool FoiExcluido { get; set; }
     public string? IdColaboradorExclusao { get; set; }
     public DateTime? HoraExclusao { get; set; }
+
+    #region Modulo Solicitacao
+
+    public bool InclusaoOriginouDeSolicitacao { get; set; }
+    public string? IdSolicitacaoInclusaoOrigem { get; set; }
+    public bool ExclusaoOriginouDeSolicitacao { get; set; }
+    public string? IdSolicitacaoExclusaoOrigem { get; set; }
+    
+    #endregion
 }

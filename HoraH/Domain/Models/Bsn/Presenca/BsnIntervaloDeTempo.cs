@@ -13,7 +13,7 @@ public class BsnIntervaloDeTempo
         return BsnTipoInterseccaoLiterais.ObterPorDoisIntervalos(this, outroIntervalo).ObterInterseccao(this, outroIntervalo);
     }
 
-    public static List<BsnIntervaloDeTempo> ObterIntervalosExpediente(List<PresencaDbModel> presencasDb)
+    public static List<BsnIntervaloDeTempo> ObterIntervalosExpediente(List<PresencaDbModel> presencasDb, TimeZoneInfo timeZone)
     {
         var intervalosRet = new List<BsnIntervaloDeTempo>();
         var idsPresencasContadas = new HashSet<string>();
@@ -29,14 +29,18 @@ public class BsnIntervaloDeTempo
             {
                 continue;
             }
-            var iIntervalo = new BsnIntervaloDeTempo { Inicio = iPresencaDb.HoraMarcada, Fim = fimExpediente.HoraMarcada };
+            var iIntervalo = new BsnIntervaloDeTempo
+            {
+                Inicio = BsnDateTimeModel.FromDb(iPresencaDb.HoraMarcada, timeZone).Value,
+                Fim = BsnDateTimeModel.FromDb(fimExpediente.HoraMarcada, timeZone).Value
+            };
             idsPresencasContadas.Add(fimExpediente.Id);
             intervalosRet.Add(iIntervalo);
         }
         return intervalosRet;
     }
 
-    public static List<BsnIntervaloDeTempo> ObterIntervalosStop(List<PresencaDbModel> presencasDb)
+    public static List<BsnIntervaloDeTempo> ObterIntervalosStop(List<PresencaDbModel> presencasDb, TimeZoneInfo timeZone)
     {
         var intervalosRet = new List<BsnIntervaloDeTempo>();
         var idsPresencasContadas = new HashSet<string>();
@@ -52,7 +56,11 @@ public class BsnIntervaloDeTempo
             {
                 continue;
             }
-            var iIntervalo = new BsnIntervaloDeTempo { Inicio = iPresencaDb.HoraMarcada, Fim = fimStop.HoraMarcada };
+            var iIntervalo = new BsnIntervaloDeTempo
+            {
+                Inicio = BsnDateTimeModel.FromDb(iPresencaDb.HoraMarcada, timeZone).Value,
+                Fim = BsnDateTimeModel.FromDb(fimStop.HoraMarcada, timeZone).Value
+            };
             idsPresencasContadas.Add(fimStop.Id);
             intervalosRet.Add(iIntervalo);
         }

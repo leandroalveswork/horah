@@ -5,6 +5,6 @@ using HoraH.Domain.Models.DbModels;
 namespace HoraH.Domain.Interfaces.Business;
 public interface IPresencaBusiness
 {
-    Task<BsnResult<List<BsnRelacaoDeHorasDoColaborador>>> PesquisarAsync(IBsnPesquisaDePresenca bsnPesquisa);
+    Task<BsnResult<List<BsnRelacaoDeHorasDoColaborador>>> PesquisarAsync(IBsnPesquisaDePresenca bsnPesquisa, TimeZoneInfo timeZone);
     Task<BsnResult<object>> MarcarAsync(string? idEvento);
 }
