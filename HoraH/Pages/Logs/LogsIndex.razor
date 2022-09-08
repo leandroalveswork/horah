@@ -1,0 +1,36 @@
+@using Domain.Models.Bsn.Autorizacao
+@using Domain.Models.ViewModels
+
+
+
+@code {
+    [CascadingParameter(Name = "SetRefColaboradorLogadoAsync")]
+    public EventCallback<BsnColaboradorLogado> SetRefColaboradorLogadoAsync { get; set; }
+    [CascadingParameter(Name = "SairEFecharAsync")]
+    public EventCallback SairEFecharAsync { get; set; }
+    [CascadingParameter(Name = "SetMensagemDeAlerta")]
+    public EventCallback<DetalhesMensagemDeAlertaViewModel> SetMensagemDeAlerta { get; set; }
+    [CascadingParameter(Name = "SetMensagemConfirmar")]
+    public EventCallback<DetalhesMensagemConfirmarViewModel> SetMensagemConfirmar { get; set; }
+    [CascadingParameter(Name = "LockUI")]
+    public EventCallback<string> LockUI { get; set; }
+    [CascadingParameter(Name = "UnlockUI")]
+    public EventCallback<string> UnlockUI { get; set; }
+    [CascadingParameter(Name = "VoltarAsync")]
+    public EventCallback VoltarAsync { get; set; }
+
+    private bool deveCarregarDados = false;
+    protected override void OnInitialized()
+    {
+        deveCarregarDados = true;
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (deveCarregarDados)
+        {
+            
+            deveCarregarDados = false;
+            StateHasChanged();
+        }
+    }
+}

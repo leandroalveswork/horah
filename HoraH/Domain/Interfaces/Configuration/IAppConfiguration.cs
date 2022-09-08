@@ -7,16 +7,11 @@ public interface IAppConfiguration
     string NomeBD { get; }
     string NomeColecColaborador { get; }
     string NomeColecAcesso { get; }
-    string NomeColecFuncionalidade { get; }
     string NomeColecPresenca { get; }
-    string NomeColecSolicitacaoAcesso { get; }
-    string NomeColecPermissaoAcessoPendente { get; }
-    string NomeColecSolicitacaoNovaPresenca { get; }
-    string NomeColecSolicitacaoAlteracaoPresenca { get; }
-    string NomeColecSolicitacaoExclusaoPresenca { get; }
-    string NomeColecLogValor { get; }
+    string NomeColecDado { get; }
     string NomeColecRegistro { get; }
     string NomeColecAlteracaoRegistro { get; }
+    string NomeColecSolicitacao { get; }
     string LocalStoreKeyDoIdColaboradorLogado { get; }
     string HashPass { get; }
     SetgColaboradorAdmin ColaboradorAdmin { get; }

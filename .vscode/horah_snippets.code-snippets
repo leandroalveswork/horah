@@ -214,6 +214,23 @@
 			"}",
 		]
 	},
+	"Classe DbModel": {
+		"scope": "csharp",
+		"prefix": "dbmodel",
+		"body": [
+			"using MongoDB.Bson;",
+			"using MongoDB.Bson.Serialization.Attributes;",
+		    "",
+			"namespace HoraH.Domain.Models.DbModels;",
+			"public class ${1:Entidade}DbModel",
+			"{",
+			"    [BsonId]",
+			"    [BsonRepresentation(BsonType.ObjectId)]",
+			"    public string? Id { get; set; }",
+			"    $0",
+			"}",
+		]
+	},
 	"Item Literal": {
 		"scope": "csharp",
 		"prefix": "inlit",
