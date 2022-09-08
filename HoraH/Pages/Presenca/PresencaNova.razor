@@ -1,0 +1,141 @@
+@page "/presenca/nova"
+
+@using Domain.Models
+@using Domain.Models.Bsn.Autorizacao
+@using Domain.Models.Bsn.Evento
+@using Domain.Models.Bsn.Funcionalidade
+@using Domain.Models.ViewModels
+@using Domain.Interfaces.Accessor
+@using Domain.Interfaces.Business
+
+@inject NavigationManager UriHelper
+@inject IColaboradorLogadoAccessor ColaboradorLogadoAccessor
+@inject IPresencaBusiness PresencaBusiness
+
+<PageTitle>Nova Presença</PageTitle>
+
+<div class='d-flex flex-column align-items-center'>
+    <h1>Nova Presença</h1>
+    <div class='row g-0 w-100 d-flex'>
+        <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
+            <label>Colaborador</label>
+            <input type='text' value=@ColaboradorLogadoAccessor.ColaboradorLogado.Nome disabled />
+        </div>
+        <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
+            <label>Evento</label>
+            <select @bind="idEvento">
+                <option value="">Selecione...</option>
+                @foreach (var iLtEvento in BsnEventoLiterais.ListarTodos())
+                {
+                    <option value=@(iLtEvento.Id)>@iLtEvento.Nome</option>
+                }
+            </select>
+        </div>
+        <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
+            <label>Data e Hora</label>
+            @if (horaAtualMostrada.HasValue)
+            {
+                <input type='text' value=@horaAtualMostrada.Value.ToString("HH:mm:ss - dd/MM/yyyy") disabled />
+            }
+            else
+            {
+                <input type='text' disabled />
+            }
+        </div>
+    </div>
+    
+    <div class='row g-0 w-100 d-flex'>
+        <div class='d-flex flex-column col-6 px-2 pt-3'>
+            <button class='p-2 border-non-important border-2 border-hrh-texto hrh-bg-inherit-non-important h-100 text-hrh-texto-non-important onhover-bg-hrh-texto-non-important onhover-text-hrh-fundo-non-important' @onclick="VoltarAsync" >
+                <span class='oi oi-arrow-left pe-2'></span>Voltar
+            </button>
+        </div>
+        @if (ColaboradorLogadoAccessor.ColaboradorLogado.TemPermissaoPara(BsnFuncionalidadeLiterais.MarcarPresenca))
+        {
+            <div class='d-flex flex-column col-6 px-2 pt-3'>
+                <button class='p-2 border-non-important border-2 border-success hrh-bg-inherit-non-important h-100 text-success-non-important onhover-bg-bs-success-non-important onhover-text-hrh-fundo-non-important' @onclick="TrySalvarAsync" >
+                    <span class='oi oi-check pe-2'></span>Salvar
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [CascadingParameter(Name = "SetRefColaboradorLogadoAsync")]
+    public EventCallback<BsnColaboradorLogado> SetRefColaboradorLogadoAsync { get; set; }
+    [CascadingParameter(Name = "SairEFecharAsync")]
+    public EventCallback SairEFecharAsync { get; set; }
+    [CascadingParameter(Name = "SetMensagemDeAlerta")]
+    public EventCallback<DetalhesMensagemDeAlertaViewModel> SetMensagemDeAlerta { get; set; }
+    [CascadingParameter(Name = "SetMensagemConfirmar")]
+    public EventCallback<DetalhesMensagemConfirmarViewModel> SetMensagemConfirmar { get; set; }
+    [CascadingParameter(Name = "LockUI")]
+    public EventCallback<string> LockUI { get; set; }
+    [CascadingParameter(Name = "UnlockUI")]
+    public EventCallback<string> UnlockUI { get; set; }
+    [CascadingParameter(Name = "VoltarAsync")]
+    public EventCallback VoltarAsync { get; set; }
+    private string? idEvento;
+    private DateTime? horaAtualMostrada;
+    private bool estaSalvando;
+    private string idSalvar = MongoId.NewMongoId;
+
+    private bool deveCarregarDados = false;
+    protected override void OnInitialized()
+    {
+        deveCarregarDados = true;
+    }
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (deveCarregarDados)
+        {
+            idEvento = "";
+            estaSalvando = false;
+            deveCarregarDados = false;
+            ComecarLoopBackgroundUmEmUmSegundo();
+            StateHasChanged();
+        }
+    }
+
+    private void ComecarLoopBackgroundUmEmUmSegundo()
+    {
+        Task.Run(async () => {
+            while (!estaSalvando)
+            {
+                await EsperarEAtualizarHoraAtualAsync();
+            }
+        });
+    }
+
+    private async Task EsperarEAtualizarHoraAtualAsync()
+    {
+        while (horaAtualMostrada != null && horaAtualMostrada.Value.Second == DateTime.Now.Second)
+        {
+            await Task.Delay(100);
+        }
+        if (!estaSalvando)
+        {
+            horaAtualMostrada = DateTime.Now;
+            await InvokeAsync(StateHasChanged);
+        }
+    }    
+
+    private async Task TrySalvarAsync()
+    {
+        estaSalvando = true;
+        await LockUI.InvokeAsync(idSalvar);
+        await Task.Yield();
+        await InvokeAsync(StateHasChanged);
+        await Task.Yield();
+        var resSalvar = await PresencaBusiness.MarcarAsync(idEvento);
+        await SetMensagemDeAlerta.InvokeAsync(new DetalhesMensagemDeAlertaViewModel
+        {
+            Titulo = Message.TituloAtencao,
+            NomeDaClasseDeCssDoIcone = resSalvar.EstaOk ? Message.IconeSucesso : Message.IconeErro,
+            Mensagem = resSalvar.Mensagem,
+            AcaoAposFechar = resSalvar.EstaOk ? EventCallback.Factory.Create(this, () => UriHelper.NavigateTo("/presenca", true)) : EventCallback.Factory.Create(this, () => estaSalvando = false)
+        });
+        await UnlockUI.InvokeAsync(idSalvar);
+    }
+}

@@ -9,6 +9,7 @@ public class Message
     public readonly static string IconePergunta = "question-mark hrh-1";
     public readonly static string PesquisaNaoEncontrouRelacao = "A pesquisa não encontrou nenhuma relação.";
     public readonly static string ErroNoServidor = "Ocorreu um erro no servidor, tente novamente mais tarde.";
+    public readonly static string RegistroIncluidoSucesso = "Registro incluído com sucesso!";
     public readonly static string RegistroAlteradoSucesso = "Registro alterado com sucesso!";
     public readonly static string TemCertezaInativarConta = "Tem certeza de que deseja inativar sua conta? Após essa ação, o site fechará automaticamente.";
     public readonly static string TemCertezaInativar = "Tem certeza de que deseja inativar esse registro?";

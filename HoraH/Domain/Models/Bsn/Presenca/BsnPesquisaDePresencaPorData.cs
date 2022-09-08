@@ -20,4 +20,17 @@ public class BsnPesquisaDePresencaPorData : IBsnPesquisaDePresenca
         }
         return !(DataFimInclusive.HasValue && dateVlr > DataFimInclusive.Value);
     }
+
+    public BsnResult<object> ValidarRanges()
+    {
+        if (MinutosTrabalhadosMaximo.HasValue && MinutosTrabalhadosMinimo.HasValue && MinutosTrabalhadosMaximo.Value < MinutosTrabalhadosMinimo.Value)
+        {
+            return BsnResult<object>.Erro("O intervalo de Minutos deve ser válido.");
+        }
+        if (DataFimInclusive.HasValue && DataInicioInclusive.HasValue && DataFimInclusive.Value < DataInicioInclusive.Value)
+        {
+            return BsnResult<object>.Erro("O intervalo de Data Específica deve ser válido.");
+        }
+        return BsnResult<object>.Ok;
+    }
 }

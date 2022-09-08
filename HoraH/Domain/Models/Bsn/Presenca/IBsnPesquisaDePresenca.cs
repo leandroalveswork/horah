@@ -8,5 +8,6 @@ public interface IBsnPesquisaDePresenca
     int? MinutosTrabalhadosMinimo { get; set; }
     int? MinutosTrabalhadosMaximo { get; set; }
     bool FoiInformadoIntervaloMinutosTrabalhados { get; }
+    BsnResult<object> ValidarRanges();
     bool DateEValido(DateTime horaMarcada);
 }

@@ -21,4 +21,13 @@ public class BsnPesquisaDePresencaPorMes : IBsnPesquisaDePresenca
         }
         return !Ano.HasValue || dateVlr.Year == Ano.Value;
     }
+
+    public BsnResult<object> ValidarRanges()
+    {
+        if (MinutosTrabalhadosMaximo.HasValue && MinutosTrabalhadosMinimo.HasValue && MinutosTrabalhadosMaximo.Value < MinutosTrabalhadosMinimo.Value)
+        {
+            return BsnResult<object>.Erro("O intervalo de Minutos deve ser válido.");
+        }
+        return BsnResult<object>.Ok;
+    }
 }

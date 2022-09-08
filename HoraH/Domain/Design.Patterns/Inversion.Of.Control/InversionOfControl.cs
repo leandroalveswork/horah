@@ -40,6 +40,7 @@ public static class InversionOfControl
     {
         services.AddScoped<IColaboradorRepository, ColaboradorRepository>();
         services.AddScoped<IAcessoRepository, AcessoRepository>();
+        services.AddScoped<IPresencaRepository, PresencaRepository>();
         return services;
     }
     
@@ -48,6 +49,7 @@ public static class InversionOfControl
         services.AddScoped<IAutorizacaoBusiness, AutorizacaoBusiness>();
         services.AddScoped<IColaboradorBusiness, ColaboradorBusiness>();
         services.AddScoped<IDadosPadraoBusiness, DadosPadraoBusiness>();
+        services.AddScoped<IPresencaBusiness, PresencaBusiness>();
         return services;
     }
 }

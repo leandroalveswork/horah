@@ -17,10 +17,10 @@
 @inject NavigationManager UriHelper
 @inject IJSRuntime JSRuntime
 
-<PageTitle>Manter Acessos</PageTitle>
+<PageTitle>@(eVisualizacao ? "Visualizar Acessos" : "Alterar Acessos")</PageTitle>
 
 <div class='d-flex flex-column align-items-center'>
-    <h1>Alterar Acessos</h1>
+    <h1>@(eVisualizacao ? "Visualizar Acessos" : "Alterar Acessos")</h1>
     <div class='row g-0 w-100 d-flex'>
         <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
             <label>Colaborador</label>

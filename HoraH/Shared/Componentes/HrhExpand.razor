@@ -1,0 +1,20 @@
+<h2 class='m-0'>
+    <i class=@((EExpandido ? "bi bi-caret-down-fill" : "bi bi-caret-right-fill") + " " + cssComumDoCheckbox) @onclick="TicarAsync"></i>
+</h2>
+
+@code {
+    [Parameter]
+    public bool EExpandido { get; set; }
+    [Parameter]
+    public EventCallback<bool> EExpandidoChanged { get; set; }
+    [Parameter]
+    public bool EDesabilitado { get; set; }
+    private string cssComumDoCheckbox => EDesabilitado ? "text-hrh-bloqueado" : "onhover-text-hrh-1-non-important onhover-pointer-non-important";
+    public async Task TicarAsync()
+    {
+        if (!EDesabilitado)
+        {
+            await EExpandidoChanged.InvokeAsync(!EExpandido);
+        }
+    }
+}

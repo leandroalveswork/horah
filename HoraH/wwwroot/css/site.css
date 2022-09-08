@@ -88,6 +88,14 @@ a, .btn-link {
 }
 
 
+.bg-hrh-bloqueado-non-important {
+    background-color: var(--hrh-bloqueado);
+}
+.bg-hrh-bloqueado {
+    background-color: var(--hrh-bloqueado) !important;
+}
+
+
 .bg-hrh-1-non-important {
     background-color: var(--hrh-1);
 }

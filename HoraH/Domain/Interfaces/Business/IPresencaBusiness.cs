@@ -6,4 +6,5 @@ namespace HoraH.Domain.Interfaces.Business;
 public interface IPresencaBusiness
 {
     Task<BsnResult<List<BsnRelacaoDeHorasDoColaborador>>> PesquisarAsync(IBsnPesquisaDePresenca bsnPesquisa);
+    Task<BsnResult<object>> MarcarAsync(string? idEvento);
 }

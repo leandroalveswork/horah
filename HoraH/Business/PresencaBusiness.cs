@@ -1,6 +1,8 @@
 using HoraH.Domain.Design.Patterns.Strategy;
+using HoraH.Domain.Interfaces.Accessor;
 using HoraH.Domain.Interfaces.Business;
 using HoraH.Domain.Interfaces.Repository;
+using HoraH.Domain.Models;
 using HoraH.Domain.Models.Bsn;
 using HoraH.Domain.Models.Bsn.Colaborador;
 using HoraH.Domain.Models.Bsn.Evento;
@@ -13,14 +15,21 @@ public class PresencaBusiness : IPresencaBusiness
 {
     private readonly IPresencaRepository _presencaRepository;
     private readonly IColaboradorBusiness _colaboradorBusiness;
-    public PresencaBusiness(IPresencaRepository presencaRepository, IColaboradorBusiness colaboradorBusiness)
+    private readonly IColaboradorLogadoAccessor _colaboradorLogadoAccessor;
+    public PresencaBusiness(IPresencaRepository presencaRepository, IColaboradorBusiness colaboradorBusiness, IColaboradorLogadoAccessor colaboradorLogadoAccessor)
     {
         _presencaRepository = presencaRepository;
         _colaboradorBusiness = colaboradorBusiness;
+        _colaboradorLogadoAccessor = colaboradorLogadoAccessor;
     }
 
     public async Task<BsnResult<List<BsnRelacaoDeHorasDoColaborador>>> PesquisarAsync(IBsnPesquisaDePresenca bsnPesquisa)
     {
+        var resValidacao = bsnPesquisa.ValidarRanges();
+        if (!resValidacao.EstaOk)
+        {
+            return BsnResult<List<BsnRelacaoDeHorasDoColaborador>>.Erro(resValidacao.Mensagem);
+        }
         var linqExpFiltro = new LinqExpModel<PresencaDbModel>();
         var filtroColaboradores = new BsnPesquisaDeColaborador { Nome = bsnPesquisa.NomeColaborador, EstaAtivo = true };
         var resColaboradoresRelac = await _colaboradorBusiness.PesquisarAsync(filtroColaboradores);
@@ -44,10 +53,7 @@ public class PresencaBusiness : IPresencaBusiness
         {
             var intervalosExpediente = BsnIntervaloDeTempo.ObterIntervalosExpediente(iGrupoPresencas.ToList());
             var intervalosStop = BsnIntervaloDeTempo.ObterIntervalosStop(iGrupoPresencas.ToList());
-            var diasRelacao = intervalosExpediente.SelectMany(x => new [] { x.Inicio.Date, x.Fim.Date })
-                .Concat(intervalosStop.SelectMany(x => new [] { x.Inicio.Date, x.Fim.Date }))
-                .Distinct()
-                .Where(x => bsnPesquisa.DateEValido(x));
+            var diasRelacao = iGrupoPresencas.Select(x => x.HoraMarcada.Date).Where(x => bsnPesquisa.DateEValido(x));
             var iRelacaoHorasTrabalhadas = new BsnRelacaoDeHorasDoColaborador
             {
                 IdColaborador = iGrupoPresencas.Key,
@@ -86,5 +92,25 @@ public class PresencaBusiness : IPresencaBusiness
             }
         }
         return BsnResult<List<BsnRelacaoDeHorasDoColaborador>>.OkConteudo(relacoesHorasTrabalhadas);
+    }
+
+    public async Task<BsnResult<object>> MarcarAsync(string? idEvento)
+    {
+        if (string.IsNullOrEmpty(idEvento))
+        {
+            return BsnResult<object>.Erro("É obrigatório informar o Evento.");
+        }
+        var hrAtual = DateTime.Now;
+        var novaPresencaDb = new PresencaDbModel
+        {
+            Id = MongoId.NewMongoId,
+            IdColaborador = _colaboradorLogadoAccessor.ColaboradorLogado.Id,
+            IdEvento = idEvento,
+            HoraMarcada = hrAtual
+        };
+        await _presencaRepository.InsertAsync(novaPresencaDb);
+        var resOk = BsnResult<object>.Ok;
+        resOk.Mensagem = Message.RegistroIncluidoSucesso;
+        return resOk;
     }
 }
