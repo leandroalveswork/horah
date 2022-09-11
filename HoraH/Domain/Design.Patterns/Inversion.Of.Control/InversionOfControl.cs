@@ -44,6 +44,9 @@ public static class InversionOfControl
         services.AddScoped<IDadoRepository, DadoRepository>();
         services.AddScoped<IRegistroRepository, RegistroRepository>();
         services.AddScoped<IAlteracaoRegistroRepository, AlteracaoRegistroRepository>();
+        services.AddScoped<IVisualizacaoRegistroRepository, VisualizacaoRegistroRepository>();
+        services.AddScoped<IItemSolicitacaoRepository, ItemSolicitacaoRepository>();
+        services.AddScoped<ISolicitacaoRepository, SolicitacaoRepository>();
         return services;
     }
     

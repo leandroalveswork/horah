@@ -25,7 +25,7 @@ public class BsnOperacaoLiterais
     {
         return new List<BsnOperacao>
         {
-            Inclusao, Alteracao, Exclusao
+            Inclusao, Alteracao, Visualizacao, Exclusao
         };
     }
     

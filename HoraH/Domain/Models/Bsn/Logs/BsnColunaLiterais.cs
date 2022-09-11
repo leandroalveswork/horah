@@ -1,3 +1,4 @@
+using System.Reflection;
 using HoraH.Domain.Models.DbModels;
 
 namespace HoraH.Domain.Models.Bsn.Logs;
@@ -6,24 +7,19 @@ public class BsnColunaLiterais
     public static List<BsnColuna> ObterColunasDaDbModel(string nomeColecao, Type dbModelType)
     {
         var props = dbModelType.GetProperties();
-        var colunas = props.Select(propt => new BsnColuna
-        {
-            Id = (nomeColecao + "_" + propt.Name).GetHashCode().ToString(),
-            Nome = nomeColecao + "_" + propt.Name,
-            NomeTabela = nomeColecao,
-            NomeColuna = propt.Name
-        }).ToList();
+        var colunas = props.Select(propt => ObterColunaEspecifica(nomeColecao, propt)).ToList();
         return colunas;
     }
 
-    public static BsnColuna ObterColunaEspecifica(string nomeColecao, string nomePropt)
+    public static BsnColuna ObterColunaEspecifica(string nomeColecao, PropertyInfo proptInfo)
     {
         var coluna = new BsnColuna
         {
-            Id = (nomeColecao + "_" + nomePropt).GetHashCode().ToString(),
-            Nome = nomeColecao + "_" + nomePropt,
+            Id = (nomeColecao + "_" + proptInfo.Name).GetHashCode().ToString(),
+            Nome = nomeColecao + "_" + proptInfo.Name,
             NomeTabela = nomeColecao,
-            NomeColuna = nomePropt
+            NomeColuna = proptInfo.Name,
+            TipoOriginal = proptInfo.PropertyType
         };
         return coluna;
     }

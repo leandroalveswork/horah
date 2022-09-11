@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 namespace HoraH.Domain.Models;
 public static class Uteis
 {
@@ -80,4 +82,15 @@ public static class Uteis
     {
         return Convert.ToInt32(Math.Ceiling(numero));
     }
+
+    public static T AsDeserializadoJson<T>(this string stringJson)
+    {
+        return (T)JsonSerializer.Deserialize(stringJson, typeof(T));
+    }
+
+    public static string AsSerializadoJson<T>(this T obj)
+    {
+        return JsonSerializer.Serialize(obj);
+    }
+    
 }

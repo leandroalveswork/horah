@@ -8,8 +8,7 @@ public class DadoDbModel
     [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; set; }
     public string? IdColuna { get; set; }
-    public string? ValorSerializadoJson { get; set; }
+    public string ValorSerializadoJson { get; set; } = "";
     public string? IdTipoRegistro { get; set; }
-    public string? IdRegistroSeInclusao { get; set; }
-    public string? IdAlteracaoRegistroSeAlteracao { get; set; }
+    public string? IdRegistroGenerico { get; set; }
 }

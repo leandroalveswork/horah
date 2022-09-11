@@ -8,6 +8,6 @@ public class ItemSolicitacaoDbModel
     [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; set; }
     public string? IdSolicitacao { get; set; }
-    public bool EstaAprovandoAlteracaoRegistro { get; set; }
-    public string? IdRegistroOuAlteracaoRegistro { get; set; }
+    public string? IdTipoRegistro { get; set; }
+    public string? IdRegistroGenerico { get; set; }
 }
