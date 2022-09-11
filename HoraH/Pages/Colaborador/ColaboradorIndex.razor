@@ -52,11 +52,11 @@
     <div class='row g-0 w-100 d-flex mt-3'>
         @if (relacoes.Any())
         {
-            <RadzenDataGrid AllowColumnResize="true" AllowSorting="true" PageSize="5" AllowPaging="true"
+            <RadzenDataGrid AllowColumnResize="true" AllowSorting="true" PageSize="10" AllowPaging="true"
                 Data="@relacoes" TItem="BsnRelacaoDeColaborador">
                 <Columns>
                     <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Property="Nome" Title="Nome" Frozen="true" Width="200px" />
-                    <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Property="Login" Title="Login" Width="150px"/>
+                    <RadzenDataGridColumn TItem="BsnRelacaoDeColaborador" Property="Login" Title="Login" Width="150px" Frozen="true"/>
                     @if (ColaboradorLogadoAccessor.ColaboradorLogado.TemPermissaoPara(BsnFuncionalidadeLiterais.ListarAcesso) || 
                         ColaboradorLogadoAccessor.ColaboradorLogado.TemPermissaoPara(BsnFuncionalidadeLiterais.AlterarAcesso))
                     {

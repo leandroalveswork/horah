@@ -53,6 +53,7 @@ public static class InversionOfControl
         services.AddScoped<IColaboradorBusiness, ColaboradorBusiness>();
         services.AddScoped<IDadosPadraoBusiness, DadosPadraoBusiness>();
         services.AddScoped<IPresencaBusiness, PresencaBusiness>();
+        services.AddScoped<ILogsBusiness, LogsBusiness>();
         return services;
     }
 }

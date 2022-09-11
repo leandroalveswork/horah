@@ -1,8 +1,6 @@
 namespace HoraH.Domain.Models.Bsn.Logs;
-public class BsnColuna
+public class BsnTipoRegistro
 {
     public string Id { get; set; } = "";
     public string Nome { get; set; } = "";
-    public string NomeTabela { get; set; } = "";
-    public string NomeColuna { get; set; } = "";
 }

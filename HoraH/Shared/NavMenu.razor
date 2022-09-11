@@ -40,12 +40,14 @@
         </NavLink>
     </div>
     
-    <div class="d-flex">
-        <NavLink href="fetchdata" class='text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-fundo-non-important text-decoration-none w-100 px-3 py-2'  @onclick="@(() => SetNavToggled.InvokeAsync(false))">
-            <span class="oi oi-spreadsheet pe-2" aria-hidden="true"></span> Logs
-        </NavLink>
-    </div>
-    
+    @if (ColaboradorLogadoAccessor.ColaboradorLogado.TemPermissaoPara(BsnFuncionalidadeLiterais.ListarLog))
+    {
+        <div class="d-flex">
+            <NavLink href="logs" class='text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-fundo-non-important text-decoration-none w-100 px-3 py-2'  @onclick="@(() => SetNavToggled.InvokeAsync(false))">
+                <span class="oi oi-spreadsheet pe-2" aria-hidden="true"></span> Logs
+            </NavLink>
+        </div>
+    }
     <div class="d-flex">
         <NavLink href="" class='text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-fundo-non-important text-decoration-none w-100 px-3 py-2' @onclick="ClickSair">
             <span class="oi oi-account-logout pe-2" aria-hidden="true"></span> Sair

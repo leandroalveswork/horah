@@ -11,6 +11,7 @@ public interface IAppConfiguration
     string NomeColecDado { get; }
     string NomeColecRegistro { get; }
     string NomeColecAlteracaoRegistro { get; }
+    string NomeColecVisualizacaoRegistro { get; }
     string NomeColecSolicitacao { get; }
     string NomeColecItemSolicitacao { get; }
     string LocalStoreKeyDoIdColaboradorLogado { get; }

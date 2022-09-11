@@ -1,0 +1,137 @@
+@page "/logs/detalhes"
+@using Domain.Design.Patterns.Strategy
+@using Domain.Models
+@using Domain.Interfaces.Accessor
+@using Domain.Interfaces.Repository
+@using Domain.Interfaces.Business
+@using Domain.Interfaces.Configuration
+@using Domain.Models.Bsn
+@using Domain.Models.Bsn.Autorizacao
+@using Domain.Models.Bsn.Funcionalidade
+@using Domain.Models.Bsn.Logs
+@using Domain.Models.ViewModels
+
+@inject IColaboradorLogadoAccessor ColaboradorLogadoAccessor
+@inject IAutorizacaoBusiness AutorizacaoBusiness
+@inject ILogsBusiness LogsBusiness
+@inject IAppConfiguration AppConfiguration
+@inject NavigationManager UriHelper
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Detalhes de Log</PageTitle>
+
+<div class='d-flex flex-column align-items-center'>
+    <h1>Detalhes da Operação</h1>
+    <div class='row g-0 w-100 d-flex'>
+        <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
+            <label>Nome Colaborador</label>
+            <input type='text' value="nomeColaborador" disabled/>
+        </div>
+        <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
+            <label>Operação</label>
+            <select value="idOperacao" disabled>
+                <option value="">Selecione...</option>
+                @foreach (var iLtOp in BsnOperacaoLiterais.ListarTodos())
+                {
+                    <option value=@(iLtOp.Id)>@iLtOp.Nome</option>
+                }
+            </select>
+        </div>
+        <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
+            <label>Tabela</label>
+            <select value="idTabela" disabled>
+                <option value="">Selecione...</option>
+                @foreach (var iLtTabela in BsnTabelaLiterais.ListarTodos())
+                {
+                    <option value=@(iLtTabela.Id)>@iLtTabela.Nome</option>
+                }
+            </select>
+        </div>
+        <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
+            <label>Id Entidade</label>
+            <input type='text' value="idEntidade" disabled/>
+        </div>
+        <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
+            <label>Data e Hora</label>
+            <input type='text' value=@(HoraOperacao.ToString("HH:mm:ss - dd/MM/yyyy")) disabled/>
+        </div>
+    </div>
+    <RadzenDataGrid AllowColumnResize="true" AllowSorting="true" PageSize="10" AllowPaging="true"
+        Data="@dados" TItem="BsnRelacaoDeDado">
+        <Columns>
+            <RadzenDataGridColumn TItem="BsnRelacaoDeDado" Title="Nome Coluna" Width="200px">
+                <Template Context="data">
+                    <span>@(BsnColunaLiterais.GetById(data.IdColuna).NomeColuna)</span>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="BsnRelacaoDeDado" Property="ValorSerializadoJson" Title="Valor JSON" Width="200px" />
+        </Columns>
+    </RadzenDataGrid>
+</div>
+
+@code {
+    [CascadingParameter(Name = "SetRefColaboradorLogadoAsync")]
+    public EventCallback<BsnColaboradorLogado> SetRefColaboradorLogadoAsync { get; set; }
+    [CascadingParameter(Name = "SairEFecharAsync")]
+    public EventCallback SairEFecharAsync { get; set; }
+    [CascadingParameter(Name = "SetMensagemDeAlerta")]
+    public EventCallback<DetalhesMensagemDeAlertaViewModel> SetMensagemDeAlerta { get; set; }
+    [CascadingParameter(Name = "SetMensagemConfirmar")]
+    public EventCallback<DetalhesMensagemConfirmarViewModel> SetMensagemConfirmar { get; set; }
+    [CascadingParameter(Name = "LockUI")]
+    public EventCallback<string> LockUI { get; set; }
+    [CascadingParameter(Name = "UnlockUI")]
+    public EventCallback<string> UnlockUI { get; set; }
+    [CascadingParameter(Name = "VoltarAsync")]
+    public EventCallback VoltarAsync { get; set; }
+    private string? idOperacao;
+    private string? idRegistro;
+    private string? idColaborador;
+    private string? nomeColaborador;
+    private string? idTabela;
+    private string? idEntidade;
+    private DateTime HoraOperacao;
+    private List<BsnRelacaoDeDado> dados = new List<BsnRelacaoDeDado>();
+
+    private bool deveCarregarDados = false;
+    protected override void OnInitialized()
+    {
+        deveCarregarDados = true;
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (deveCarregarDados)
+        {
+            await CarregarDadosAsync();
+            deveCarregarDados = false;
+            StateHasChanged();
+        }
+    }
+    private async Task CarregarDadosAsync()
+    {
+        idOperacao = UriHelper.Uri.ExtrairQueryParamDeUrl("idOperacao");
+        idRegistro = UriHelper.Uri.ExtrairQueryParamDeUrl("idRegistro");
+        if (idOperacao == null || idRegistro == null)
+        {
+            return;
+        }
+        var resLogs = await LogsBusiness.ObterPorIdAsync(idOperacao, idRegistro, TimeZoneInfo.Local);
+        if (!resLogs.EstaOk)
+        {
+            await SetMensagemDeAlerta.InvokeAsync(new DetalhesMensagemDeAlertaViewModel
+            {
+                Titulo = Message.TituloAtencao,
+                NomeDaClasseDeCssDoIcone = Message.IconeErro,
+                Mensagem = resLogs.Mensagem
+            });
+            return;
+        }
+        idColaborador = resLogs.Resultado.IdColaboradorOperador;
+        nomeColaborador = resLogs.Resultado.NomeColaboradorOperador;
+        idTabela = resLogs.Resultado.IdTabela;
+        idEntidade = resLogs.Resultado.IdEntidade;
+        HoraOperacao = resLogs.Resultado.HoraOperacao;
+        dados = new List<BsnRelacaoDeDado>(resLogs.Resultado.Dados);
+    }
+
+}

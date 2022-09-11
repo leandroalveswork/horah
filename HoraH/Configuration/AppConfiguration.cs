@@ -21,6 +21,7 @@ public class AppConfiguration : IAppConfiguration
     public string NomeColecDado => "Dado";
     public string NomeColecRegistro => "Registro";
     public string NomeColecAlteracaoRegistro => "AlteracaoRegistro";
+    public string NomeColecVisualizacaoRegistro => "VisualizacaoRegistro";
     public string NomeColecSolicitacao => "Solicitacao";
     public string NomeColecItemSolicitacao => "ItemSolicitacao";
     public string LocalStoreKeyDoIdColaboradorLogado => "IdColaboradorLogado";
