@@ -21,7 +21,7 @@ public class BsnPesquisaDePresencaPorData : IBsnPesquisaDePresenca
         return !(DataFimInclusive.HasValue && dateVlr > DataFimInclusive.Value);
     }
 
-    public BsnResult<object> ValidarRanges()
+    public BsnResult<object> ValidarRangesEObrigatorios()
     {
         if (MinutosTrabalhadosMaximo.HasValue && MinutosTrabalhadosMinimo.HasValue && MinutosTrabalhadosMaximo.Value < MinutosTrabalhadosMinimo.Value)
         {

@@ -36,11 +36,16 @@ public class BsnTabelaLiterais
         Id = "7",
         Nome = "Solicitacao"
     };
+    public static readonly BsnTabela ItemSolicitacao = new BsnTabela
+    {
+        Id = "8",
+        Nome = "ItemSolicitacao"
+    };
     public static List<BsnTabela> ListarTodos()
     {
         return new List<BsnTabela>
         {
-            Colaborador, Acesso, Presenca, Dado, Registro, AlteracaoRegistro, Solicitacao
+            Colaborador, Acesso, Presenca, Dado, Registro, AlteracaoRegistro, Solicitacao, ItemSolicitacao
         };
     }
     

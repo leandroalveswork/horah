@@ -14,7 +14,8 @@ public class BsnRelacaoDoDiaTrabalhado
             _dia = value.Date;
         }
     }
-    public string NomeColaborador => PresencasDoDia.FirstOrDefault()?.NomeColaborador ?? "ERRO";
+    public string IdColaborador => PresencasDoDia.FirstOrDefault().IdColaborador;
+    public string NomeColaborador => PresencasDoDia.FirstOrDefault().NomeColaborador;
     public List<BsnRelacaoDePresenca> PresencasDoDia { get; set; } = new List<BsnRelacaoDePresenca>();
     public void CalcularMinutosTrabalhados(List<BsnIntervaloDeTempo> intervalosExpediente, List<BsnIntervaloDeTempo> intervalosStop)
     {

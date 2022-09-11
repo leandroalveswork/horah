@@ -6,5 +6,5 @@ public class BsnRelacaoDeLog
     public string? IdOperacao { get; set; }
     public string? IdTabela { get; set; }
     public DateTime HoraOperacao { get; set; }
-    public List<BsnRelacaoDeDado> DadosEnvolvidos { get; set; } = new List<BsnRelacaoDeDado>();
+    public List<BsnRelacaoDeDado> Colunas { get; set; } = new List<BsnRelacaoDeDado>();
 }

@@ -9,11 +9,10 @@ public class AlteracaoRegistroDbModel
     public string? Id { get; set; }
     public string? IdRegistroAlterado { get; set; }
     public DateTime HoraAlteracao { get; set; }
-    
+
     #region Modulo Solicitacao
-    
-    public bool OriginouDeSolicitacao { get; set; }
-    public string? IdSolicitacaoOrigem { get; set; }
+
+    public bool EstaEsperandoAprovacao { get; set; }
     
     #endregion
 }

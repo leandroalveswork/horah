@@ -11,4 +11,7 @@ public class BsnRelacaoDePresenca
     public string NomeColaborador { get; set; } = "";
     public string IdEvento { get; set; } = "";
     public DateTime HoraMarcada { get; set; }
+    public string EventoView => BsnEventoLiterais.GetById(IdEvento).Nome;
+    public string HoraView => HoraMarcada.ToString("HH:mm:ss");
+    public string DiaView => HoraMarcada.ToString("dd/MM/yyyy");
 }

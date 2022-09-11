@@ -26,4 +26,15 @@ public class HrhListaSuporteStrategy
         }
         return false;
     }
+
+    public static List<int> ListarEsteEUltimos20Anos()
+    {
+        var anos = new List<int>();
+        var esteAno = DateTime.Now.Year;
+        for (int iAno = 0; iAno < 20; iAno++)
+        {
+            anos.Add(esteAno - iAno);
+        }
+        return anos;
+    }
 }

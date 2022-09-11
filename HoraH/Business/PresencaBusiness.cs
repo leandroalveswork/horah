@@ -25,7 +25,7 @@ public class PresencaBusiness : IPresencaBusiness
 
     public async Task<BsnResult<List<BsnRelacaoDeHorasDoColaborador>>> PesquisarAsync(IBsnPesquisaDePresenca bsnPesquisa, TimeZoneInfo timeZone)
     {
-        var resValidacao = bsnPesquisa.ValidarRanges();
+        var resValidacao = bsnPesquisa.ValidarRangesEObrigatorios();
         if (!resValidacao.EstaOk)
         {
             return BsnResult<List<BsnRelacaoDeHorasDoColaborador>>.Erro(resValidacao.Mensagem);
@@ -42,7 +42,7 @@ public class PresencaBusiness : IPresencaBusiness
             var idsColaboradores = resColaboradoresRelac.Resultado.Select(x => x.Id).ToList();
             linqExpFiltro.AppendAndAlso(x => idsColaboradores.Contains(x.IdColaborador));
         }
-        if (bsnPesquisa.IdEvento != null)
+        if (!string.IsNullOrEmpty(bsnPesquisa.IdEvento))
         {
             linqExpFiltro.AppendAndAlso(x => x.IdEvento == bsnPesquisa.IdEvento);
         }

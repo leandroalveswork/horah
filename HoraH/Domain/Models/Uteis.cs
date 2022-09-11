@@ -32,7 +32,7 @@ public static class Uteis
         {
             return minutosStr + "min";
         }
-        return horasStr + "h " + minutosStr + "min";
+        return horasStr + "h" + minutosStr + "min";
     }
 
     public static string ExtrairQueryParamDeUrl(this string url, string key)

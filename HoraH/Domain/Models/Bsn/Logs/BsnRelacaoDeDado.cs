@@ -4,5 +4,4 @@ public class BsnRelacaoDeDado
     public string? Id { get; set; }
     public string? IdColuna { get; set; }
     public string? ValorSerializadoJson { get; set; }
-    public bool EInclusao { get; set; }
 }

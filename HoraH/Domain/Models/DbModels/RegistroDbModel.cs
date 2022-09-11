@@ -15,10 +15,7 @@ public class RegistroDbModel
 
     #region Modulo Solicitacao
 
-    public bool InclusaoOriginouDeSolicitacao { get; set; }
-    public string? IdSolicitacaoInclusaoOrigem { get; set; }
-    public bool ExclusaoOriginouDeSolicitacao { get; set; }
-    public string? IdSolicitacaoExclusaoOrigem { get; set; }
-    
+    public bool EstaEsperandoAprovacao { get; set; }
+
     #endregion
 }

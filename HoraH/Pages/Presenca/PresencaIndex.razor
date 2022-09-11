@@ -12,6 +12,7 @@
 @using Domain.Models.Bsn.Evento
 @using Domain.Models.Bsn.Funcionalidade
 @using Domain.Models.Bsn.Mes
+@using Domain.Models.Bsn.Periodo
 @using Domain.Models.Bsn.Presenca
 @using Domain.Models.ViewModels
 @using Domain.Interfaces.Configuration
@@ -28,7 +29,7 @@
 <PageTitle>Presença</PageTitle>
 
 <div class='d-flex flex-column'>
-    <h1>Presença Index</h1>
+    <h1>Filtros</h1>
     <div class='row g-0 w-100 d-flex'>
         <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
             <label>Nome Colaborador</label>
@@ -56,28 +57,45 @@
         </div>
     </div>
     <div class='row g-0 w-100 d-flex'>
+        <div class='d-flex flex-column col-sm-6 col-md-4 px-2 pt-3'>
+            <label>[Autopreencher Período]:</label>
+            <select value=@idAutopreencher @onchange=@OnChangeIdAutopreencher>
+                <option value="">Selecione...</option>
+                @foreach (var iLtPeriodo in BsnPeriodoLiterais.ListarTodos())
+                {
+                    <option value=@(iLtPeriodo.Id)>@iLtPeriodo.Nome</option>
+                }
+            </select>
+        </div>
         <div class='d-flex flex-row align-items-center col-sm-6 col-md-4 px-2 pt-3'>
             <HrhCheckbox @bind-EChecado=@ePesquisaPorData EDesabilitado=@false />
             <label class='ps-2'>É pesquisa por Data Específica?</label>
+        </div>
+        <div class='d-flex flex-row align-items-center col-sm-6 col-md-4 px-2 pt-3'>
+            <HrhCheckbox @bind-EChecado=@ePesquisaPorIntervalo EDesabilitado=@false />
+            <label class='ps-2'>É pesquisa por Intervalo?</label>
         </div>
     </div>
     <div class='row g-0 w-100 d-flex'>
         @if (ePesquisaPorData)
         {
             <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
-                <label>Data Início</label>
+                <label>@(ePesquisaPorIntervalo ? "Data Início" : "Data")</label>
                 <input type='date' @bind="dataInicio" />
             </div>
-            <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
-                <label>Data Fim</label>
-                <input type='date' @bind="dataFim" />
-            </div>
+            @if (ePesquisaPorIntervalo)
+            {
+                <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
+                    <label>Data Fim</label>
+                    <input type='date' @bind="dataFim" />
+                </div>
+            }
         }
         else
         {
             <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
-                <label>Mês</label>
-                <select @bind="idMes">
+                <label>@(ePesquisaPorIntervalo ? "Mês Início" : "Mês")</label>
+                <select @bind="idMesInicio">
                     <option value="">Selecione...</option>
                     @foreach (var iLtMes in BsnMesLiterais.ListarTodos())
                     {
@@ -86,11 +104,42 @@
                 </select>
             </div>
             <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
-                <label>Ano</label>
-                <input type='number' @bind="ano" />
+                <label>@(ePesquisaPorIntervalo ? "Ano Início" : "Ano")</label>
+                <select @bind="idAnoInicio">
+                    <option value="">Selecione...</option>
+                    @foreach (var iAno in listaAnos)
+                    {
+                        <option value=@iAno>@iAno</option>
+                    }
+                </select>
             </div>
         }
     </div>
+    @if (!ePesquisaPorData && ePesquisaPorIntervalo)
+    {
+        <div class='row g-0 w-100 d-flex'>
+            <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
+                <label>Mês Fim</label>
+                <select @bind="idMesFim">
+                    <option value="">Selecione...</option>
+                    @foreach (var iLtMes in BsnMesLiterais.ListarTodos())
+                    {
+                        <option value=@(iLtMes.Id)>@iLtMes.Sigla</option>
+                    }
+                </select>
+            </div>
+            <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
+                <label>Ano Fim</label>
+                <select @bind="idAnoFim">
+                    <option value="">Selecione...</option>
+                    @foreach (var iAno in listaAnos)
+                    {
+                        <option value=@iAno>@iAno</option>
+                    }
+                </select>
+            </div>
+        </div>
+    }
     <div class='row g-0 w-100 d-flex'>
         <div class='d-flex flex-column col-12 px-2 pt-3'>
             <button class='p-2 border-non-important border-2 border-hrh-1 hrh-bg-inherit-non-important h-100 text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-fundo-non-important' @onclick="SubmitPesquisarAsync" >
@@ -98,53 +147,38 @@
             </button>
         </div>
     </div>
-    <h1 class='pt-3'>Presenças</h1>
-    <div class='w-100 mt-3'>
-        @if (relacoesPresencas.Any())
+    <h1 class='pt-3'>Banco Horas</h1>
+    <div class='w-100 mt-3 text-hrh-fundo'>
+        @if (relacoesViewDiaTotal.Any())
         {
             <RadzenDataGrid AllowColumnResize="true" AllowSorting="true" PageSize="10" AllowPaging="true"
-                Data="@relacoesPresencas" TItem="BsnRelacaoDePresenca">
+                Data="@relacoesViewDiaTotal" TItem="RelacaoDoDiaTrabViewModel" AllowGrouping="true" GroupPanelText="Arraste um cabeçalho para esta área para agrupar">
                 <Columns>
-                    <RadzenDataGridColumn TItem="BsnRelacaoDePresenca" Property="NomeColaborador" Title="Colaborador" Frozen="true" Width="200px" />
-                    <RadzenDataGridColumn TItem="BsnRelacaoDePresenca" Property="IdEvento" Title="Evento" Width="200px">
-                        <Template Context="data">
-                            <span class='p-2'>@(BsnEventoLiterais.GetById(data.IdEvento).Nome)</span>
-                        </Template>
-                    </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="BsnRelacaoDePresenca" Property="HoraMarcada" Title="Data e Hora" Width="100px">
-                        <Template Context="data">
-                            <span class='p-2'>@(data.HoraMarcada.ToString("HH:mm:ss - dd/MM/yyyy"))</span>
-                        </Template>
-                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="RelacaoDoDiaTrabViewModel" Property="NomeColaborador" Title="Colaborador" Frozen="true" Width="200px" />
+                    <RadzenDataGridColumn TItem="RelacaoDoDiaTrabViewModel" Property="HorasView" Title="Horas" Width="200px" />
+                    <RadzenDataGridColumn TItem="RelacaoDoDiaTrabViewModel" Property="DiaView" Title="Dia" Width="100px" />
                 </Columns>
             </RadzenDataGrid>
-
         }
         else
         {
             <div>@Message.PesquisaNaoEncontrouRelacao</div>
         }
     </div>
-    <h1 class='pt-3'>Banco Horas</h1>
-    <div class='w-100 mt-3'>
-        @if (relacoesDiaTotal.Any())
+    <h1 class='pt-3'>Presenças</h1>
+    <div class='w-100 mt-3 text-hrh-fundo'>
+        @if (relacoesViewPresenca.Any())
         {
             <RadzenDataGrid AllowColumnResize="true" AllowSorting="true" PageSize="10" AllowPaging="true"
-                Data="@relacoesDiaTotal" TItem="BsnRelacaoDoDiaTrabalhado">
+                Data="@relacoesViewPresenca" TItem="BsnRelacaoDePresenca" AllowGrouping="true" GroupPanelText="Arraste um cabeçalho para esta área para agrupar">
                 <Columns>
-                    <RadzenDataGridColumn TItem="BsnRelacaoDoDiaTrabalhado" Property="NomeColaborador" Title="Colaborador" Frozen="true" Width="200px" />
-                    <RadzenDataGridColumn TItem="BsnRelacaoDoDiaTrabalhado" Property="Dia" Title="Data" Width="200px">
-                        <Template Context="data">
-                            <span class='p-2'>@data.Dia.ToString("dd/MM/yyyy")</span>
-                        </Template>
-                    </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="BsnRelacaoDoDiaTrabalhado" Property="MinutosTrabalhados" Title="Total Horas" Width="100px">
-                        <Template Context="data">
-                            <span class='p-2'>@(data.MinutosTrabalhados.AsTotalHorasFormatted())</span>
-                        </Template>
-                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="BsnRelacaoDePresenca" Property="NomeColaborador" Title="Colaborador" Frozen="true" Width="200px" />
+                    <RadzenDataGridColumn TItem="BsnRelacaoDePresenca" Property="EventoView" Title="Evento" Width="200px" />
+                    <RadzenDataGridColumn TItem="BsnRelacaoDePresenca" Property="HoraView" Title="Hora" Width="100px" />
+                    <RadzenDataGridColumn TItem="BsnRelacaoDePresenca" Property="DiaView" Title="Dia" Width="100px" />
                 </Columns>
             </RadzenDataGrid>
+
         }
         else
         {
@@ -176,16 +210,22 @@
     private int? minimoMinutos;
     private int? maximoMinutos;
     private bool ePesquisaPorData;
+    private bool ePesquisaPorIntervalo;
     private DateTime? dataInicio;
     private DateTime? dataFim;
-    private string? idMes;
-    private int? ano;
+    private string? idAutopreencher;
+    private string? idMesInicio;
+    private string? idAnoInicio;
+    private string? idMesFim;
+    private string? idAnoFim;
     
+    private List<int> listaAnos = HrhListaSuporteStrategy.ListarEsteEUltimos20Anos();
     private string idPesquisar = MongoId.NewMongoId;
-    private List<BsnRelacaoDeHorasDoColaborador> relacoes = new List<BsnRelacaoDeHorasDoColaborador>();
-    private List<RelacaoDeHorasViewModel> relacoesViewModel = new List<RelacaoDeHorasViewModel>();
-    private List<BsnRelacaoDePresenca> relacoesPresencas = new List<BsnRelacaoDePresenca>();
+    @* private List<BsnRelacaoDeHorasDoColaborador> relacoes = new List<BsnRelacaoDeHorasDoColaborador>();
+    private List<BsnRelacaoDePresenca> relacoesPresencas = new List<BsnRelacaoDePresenca>(); *@
     private List<BsnRelacaoDoDiaTrabalhado> relacoesDiaTotal = new List<BsnRelacaoDoDiaTrabalhado>();
+    private List<RelacaoDoDiaTrabViewModel> relacoesViewDiaTotal = new List<RelacaoDoDiaTrabViewModel>();
+    private List<BsnRelacaoDePresenca> relacoesViewPresenca = new List<BsnRelacaoDePresenca>();
 
     private bool deveCarregarDados = false;
     protected override void OnInitialized()
@@ -203,8 +243,11 @@
             ePesquisaPorData = false;
             dataInicio = null;
             dataFim = null;
-            idMes = "";
-            ano = null;
+            idAutopreencher = "";
+            idMesInicio = "";
+            idMesFim = "";
+            idAnoInicio = "";
+            idAnoFim = "";
             await CarregarRelacoesAsync(BsnPesquisaDePresencaPorMes.SemFiltro);
             deveCarregarDados = false;
             StateHasChanged();
@@ -216,10 +259,11 @@
         var resultRelacoes = await PresencaBusiness.PesquisarAsync(pesquisa, TimeZoneInfo.Local);
         if (resultRelacoes.EstaOk)
         {
-            relacoes = resultRelacoes.Resultado;
-            relacoesViewModel = relacoes.Select(x => RelacaoDeHorasViewModel.FromBsnRelacao(x)).ToList();
-            relacoesDiaTotal = relacoes.SelectMany(x => x.DiasTrabalhados).ToList();
-            relacoesPresencas = relacoesDiaTotal.SelectMany(x => x.PresencasDoDia).ToList();
+            @* relacoes = resultRelacoes.Resultado; *@
+            relacoesDiaTotal = resultRelacoes.Resultado.SelectMany(x => x.DiasTrabalhados).ToList();
+            relacoesViewDiaTotal = relacoesDiaTotal.Select(x => RelacaoDoDiaTrabViewModel.FromBsnRelacao(x)).ToList();
+            relacoesViewPresenca = relacoesDiaTotal.SelectMany(x => x.PresencasDoDia).ToList();
+            @* relacoesPresencas = relacoesDiaTotal.SelectMany(x => x.PresencasDoDia).ToList(); *@
         }
         else
         {
@@ -232,6 +276,50 @@
         }
     }
 
+    public void OnChangeIdAutopreencher(ChangeEventArgs args)
+    {
+        if (args.Value == null)
+        {
+            return;
+        }
+        var nextIdAutopreencherAsString = args.Value.ToString();
+        if (string.IsNullOrEmpty(nextIdAutopreencherAsString))
+        {
+            return;
+        }
+        HandleChangeIdAutoPreencher(nextIdAutopreencherAsString);
+    }
+
+    public void HandleChangeIdAutoPreencher(string nextIdAutopreencher)
+    {
+        var periodoAuto = BsnPeriodoLiterais.GetByIdOrDefault(nextIdAutopreencher);
+        if (periodoAuto == null)
+        {
+            idAutopreencher = nextIdAutopreencher;
+            StateHasChanged();
+            return;
+        }
+        if (periodoAuto.PeriodoArgs.EPorMes)
+        {
+            var periodoArgsMes = (BsnPeriodoPorMesArgs)periodoAuto.PeriodoArgs;
+            ePesquisaPorData = false;
+            ePesquisaPorIntervalo = false;
+            idMesInicio = periodoArgsMes.IdMes;
+            idAnoInicio = periodoArgsMes.IdAno;
+            idAutopreencher = nextIdAutopreencher;
+            StateHasChanged();
+            return;
+        }
+        var periodoArgs = (BsnPeriodoPorDataArgs)periodoAuto.PeriodoArgs;
+        ePesquisaPorData = true;
+        ePesquisaPorIntervalo = true;
+        dataInicio = periodoArgs.DataInicioInclusive;
+        dataFim = periodoArgs.DataFimInclusive;
+        idAutopreencher = nextIdAutopreencher;
+        StateHasChanged();
+        return;
+    }
+
     public async Task SubmitPesquisarAsync()
     {
         await LockUI.InvokeAsync(idPesquisar);
@@ -239,7 +327,7 @@
         IBsnPesquisaDePresenca pesquisaSubmit;
         if (ePesquisaPorData)
         {
-            pesquisaSubmit = new BsnPesquisaDePresencaPorData
+            var pesquisaEspecifica = new BsnPesquisaDePresencaPorData
             {
                 NomeColaborador = nomeColaborador,
                 IdEvento = idEvento,
@@ -248,18 +336,31 @@
                 DataInicioInclusive = dataInicio,
                 DataFimInclusive = dataFim
             };
+            if (!ePesquisaPorIntervalo)
+            {
+                pesquisaEspecifica.DataFimInclusive = dataInicio;
+            }
+            pesquisaSubmit = pesquisaEspecifica;
         }
         else
         {
-            pesquisaSubmit = new BsnPesquisaDePresencaPorMes
+            var pesquisaEspecifica = new BsnPesquisaDePresencaPorMes
             {
                 NomeColaborador = nomeColaborador,
                 IdEvento = idEvento,
                 MinutosTrabalhadosMinimo = minimoMinutos,
                 MinutosTrabalhadosMaximo = maximoMinutos,
-                IdMes = idMes,
-                Ano = ano
+                IdMesInicioInclusive = idMesInicio,
+                IdAnoInicioInclusive = idAnoInicio,
+                IdMesFimInclusive = idMesFim,
+                IdAnoFimInclusive = idAnoFim
             };
+            if (!ePesquisaPorIntervalo)
+            {
+                pesquisaEspecifica.IdMesFimInclusive = idMesFim;
+                pesquisaEspecifica.IdAnoFimInclusive = idAnoFim;
+            }
+            pesquisaSubmit = pesquisaEspecifica;
         }
         await CarregarRelacoesAsync(pesquisaSubmit);
         await UnlockUI.InvokeAsync(idPesquisar);

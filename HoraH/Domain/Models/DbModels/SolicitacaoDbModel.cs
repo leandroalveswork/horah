@@ -11,5 +11,5 @@ public class SolicitacaoDbModel
     public string? IdTipoSolicitacao { get; set; }
     public string? IdStatusSolicitacao { get; set; }
     public string? IdColaboradorAprovador { get; set; }
-    public string Motivo { get; set; }
+    public string Motivo { get; set; } = "";
 }
