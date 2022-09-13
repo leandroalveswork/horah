@@ -127,7 +127,7 @@ public class LogsBusiness : ILogsBusiness
             var idsRegistrosCujosDadosSaoDaTabela = dadosDb.Select(x => x.IdRegistroGenerico).Distinct();
             linqExpFiltro.AppendAndAlso(x => idsRegistrosCujosDadosSaoDaTabela.Contains(x.Id));
         }
-        var idsColunasSaoId = BsnColunaLiterais.ListarTodos().Where(x => x.NomeColuna == "Id").Select(x => x.Id);
+        var idsColunasSaoId = BsnColunaLiterais.ObterColunasSaoId();
         if (!string.IsNullOrEmpty(pesquisa.IdEntidade))
         {
             var linqExpDados = new LinqExpModel<DadoDbModel>(x => x.IdTipoRegistro == BsnTipoRegistroLiterais.Inclusao.Id && idsColunasSaoId.Contains(x.IdColuna));
@@ -207,7 +207,7 @@ public class LogsBusiness : ILogsBusiness
             var idsRegistrosCujosDadosSaoDaTabela = dadosDb.Select(x => x.IdRegistroGenerico).Distinct();
             linqExpFiltro.AppendAndAlso(x => idsRegistrosCujosDadosSaoDaTabela.Contains(x.Id));
         }
-        var idsColunasSaoId = BsnColunaLiterais.ListarTodos().Where(x => x.NomeColuna == "Id").Select(x => x.Id);
+        var idsColunasSaoId = BsnColunaLiterais.ObterColunasSaoId();
         if (!string.IsNullOrEmpty(pesquisa.IdEntidade))
         {
             var linqExpDados = new LinqExpModel<DadoDbModel>(x => x.IdTipoRegistro == BsnTipoRegistroLiterais.Inclusao.Id && idsColunasSaoId.Contains(x.IdColuna));
@@ -287,7 +287,7 @@ public class LogsBusiness : ILogsBusiness
             var idsRegistrosCujosDadosSaoDaTabela = dadosDb.Select(x => x.IdRegistroGenerico).Distinct();
             linqExpFiltro.AppendAndAlso(x => idsRegistrosCujosDadosSaoDaTabela.Contains(x.Id));
         }
-        var idsColunasSaoId = BsnColunaLiterais.ListarTodos().Where(x => x.NomeColuna == "Id").Select(x => x.Id);
+        var idsColunasSaoId = BsnColunaLiterais.ObterColunasSaoId();
         if (!string.IsNullOrEmpty(pesquisa.IdEntidade))
         {
             var linqExpDados = new LinqExpModel<DadoDbModel>(x => x.IdTipoRegistro == BsnTipoRegistroLiterais.Inclusao.Id && idsColunasSaoId.Contains(x.IdColuna));
@@ -367,7 +367,7 @@ public class LogsBusiness : ILogsBusiness
             var idsRegistrosCujosDadosSaoDaTabela = dadosDb.Select(x => x.IdRegistroGenerico).Distinct();
             linqExpFiltro.AppendAndAlso(x => idsRegistrosCujosDadosSaoDaTabela.Contains(x.Id));
         }
-        var idsColunasSaoId = BsnColunaLiterais.ListarTodos().Where(x => x.NomeColuna == "Id").Select(x => x.Id);
+        var idsColunasSaoId = BsnColunaLiterais.ObterColunasSaoId();
         if (!string.IsNullOrEmpty(pesquisa.IdEntidade))
         {
             var linqExpDados = new LinqExpModel<DadoDbModel>(x => x.IdTipoRegistro == BsnTipoRegistroLiterais.Inclusao.Id && idsColunasSaoId.Contains(x.IdColuna));
@@ -426,7 +426,7 @@ public class LogsBusiness : ILogsBusiness
 
     public async Task<BsnResult<BsnRelacaoDeLog>> ObterPorIdAsync(string idOperacao, string idRegistro, TimeZoneInfo timeZone)
     {
-        var idsColunasSaoId = BsnColunaLiterais.ListarTodos().Where(x => x.NomeColuna == "Id").Select(x => x.Id);
+        var idsColunasSaoId = BsnColunaLiterais.ObterColunasSaoId();
         if (idOperacao == BsnOperacaoLiterais.Inclusao.Id)
         {
             var linqExpFiltro = new LinqExpModel<RegistroDbModel>(x => !x.EstaEsperandoAprovacao && x.Id == idRegistro);

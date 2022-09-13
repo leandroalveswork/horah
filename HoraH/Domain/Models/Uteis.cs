@@ -92,5 +92,9 @@ public static class Uteis
     {
         return JsonSerializer.Serialize(obj);
     }
-    
+
+    public static T DuplicarNaMemoria<T>(this T objetoPorReferencia)
+    {
+        return objetoPorReferencia.AsSerializadoJson().AsDeserializadoJson<T>();
+    }
 }

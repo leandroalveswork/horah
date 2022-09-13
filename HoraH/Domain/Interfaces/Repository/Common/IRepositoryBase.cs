@@ -8,6 +8,7 @@ public interface IRepositoryBase<T>
     Task<T?> SelectByIdAsync(string id);
     Task<List<T>> SelectByLinqExpModelAsync(LinqExpModel<T> linqExpMd);
     Task InsertAsync(T entity);
+    Task InsertManyAsync(IEnumerable<T> entities);
     Task UpdateAsync(string id, T entity);
     Task DeleteAsync(string id);
     Task<bool> ExistsAsync(string id);

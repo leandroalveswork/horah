@@ -101,6 +101,19 @@ public class RepositoryBase<T> : IRepositoryBase<T>
         }
     }
 
+    public async Task InsertManyAsync(IEnumerable<T> entities)
+    {
+        var session = _dbSessionAccessor.DbSession;
+        if (session == null)
+        {
+            await GetCollection().InsertManyAsync(entities);
+        }
+        else
+        {
+            await GetCollection().InsertManyAsync(session, entities);
+        }
+    }
+
     public async Task UpdateAsync(string id, T entity)
     {
         var session = _dbSessionAccessor.DbSession;

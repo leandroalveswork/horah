@@ -31,21 +31,26 @@ public class BsnTabelaLiterais
         Id = "6",
         Nome = "AlteracaoRegistro"
     };
-    public static readonly BsnTabela Solicitacao = new BsnTabela
+    public static readonly BsnTabela VisualizacaoRegistro = new BsnTabela
     {
         Id = "7",
+        Nome = "VisualizacaoRegistro"
+    };
+    public static readonly BsnTabela Solicitacao = new BsnTabela
+    {
+        Id = "8",
         Nome = "Solicitacao"
     };
     public static readonly BsnTabela ItemSolicitacao = new BsnTabela
     {
-        Id = "8",
+        Id = "9",
         Nome = "ItemSolicitacao"
     };
     public static List<BsnTabela> ListarTodos()
     {
         return new List<BsnTabela>
         {
-            Colaborador, Acesso, Presenca, Dado, Registro, AlteracaoRegistro, Solicitacao, ItemSolicitacao
+            Colaborador, Acesso, Presenca, Dado, Solicitacao, ItemSolicitacao
         };
     }
     

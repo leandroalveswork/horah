@@ -9,6 +9,7 @@ using HoraH.Domain.Models;
 using HoraH.Domain.Models.Bsn;
 using HoraH.Domain.Models.Bsn.Autorizacao;
 using HoraH.Domain.Models.Bsn.Funcionalidade;
+using HoraH.Domain.Models.Bsn.Logs;
 using HoraH.Domain.Models.DbModels;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
@@ -20,17 +21,20 @@ public class AutorizacaoBusiness : IAutorizacaoBusiness
     private readonly IColaboradorRepository _colaboradorRepository;
     private readonly IAcessoRepository _acessoRepository;
     private readonly IUnitOfWork _uow;
+    private readonly IGravadorLogBusiness _gravadorLogBusiness;
     public AutorizacaoBusiness(IAppConfiguration appConfiguration,
                                IColaboradorLogadoAccessor colaboradorLogadoAccessor,
                                IColaboradorRepository colaboradorRepository,
                                IAcessoRepository acessoRepository,
-                               IUnitOfWork uow)
+                               IUnitOfWork uow,
+                               IGravadorLogBusiness gravadorLogBusiness)
     {
         _appConfiguration = appConfiguration;
         _colaboradorLogadoAccessor = colaboradorLogadoAccessor;
         _colaboradorRepository = colaboradorRepository;
         _acessoRepository = acessoRepository;
         _uow = uow;
+        _gravadorLogBusiness = gravadorLogBusiness;
     }
 
     public string CriptografarSenha(string senha)
@@ -66,8 +70,11 @@ public class AutorizacaoBusiness : IAutorizacaoBusiness
             {
                 colaborador.EstaAtivo = true;
                 await _colaboradorRepository.UpdateAsync(colaborador.Id, colaborador);
+                await _gravadorLogBusiness.GravarAlteracaoAsync(colaborador, BsnColunaLiterais.ListarIdsColunasSingle("Colaborador", "EstaAtivo", typeof(ColaboradorDbModel)), colaborador.Id);
             }
+            await _gravadorLogBusiness.GravarVisualizacaoAsync(colaborador, BsnColunaLiterais.ListarIdsColunasSingle("Colaborador", "Login", typeof(ColaboradorDbModel)), colaborador.Id);
             var acessosDoColaborador = await _acessoRepository.SelectByIdDoColaboradorAsync(colaborador.Id);
+            await _gravadorLogBusiness.GravarMuitasVisualizacoesAsync(acessosDoColaborador, BsnColunaLiterais.ListarIdsColunas("Acesso", new [] { "Id", "IdColaborador", "IdFuncionalidade", "EstaPermitido" }, typeof(AcessoDbModel)), colaborador.Id);
             _colaboradorLogadoAccessor.ColaboradorLogado = new BsnColaboradorLogado()
             {
                 Id = colaborador.Id,
@@ -110,7 +117,7 @@ public class AutorizacaoBusiness : IAutorizacaoBusiness
                 bsnReturn = BsnResult<object>.Erro(resultValidacaoComMesmoLogin.Mensagem);
                 return;
             }
-            var novoDbColaborador = new ColaboradorDbModel()
+            var novoDbColaborador = new ColaboradorDbModel
             {
                 Id = MongoId.NewMongoId,
                 Nome = bsnNovoColaborador.Nome,
@@ -119,12 +126,14 @@ public class AutorizacaoBusiness : IAutorizacaoBusiness
                 EstaAtivo = true
             };
             await _colaboradorRepository.InsertAsync(novoDbColaborador);
+            await _gravadorLogBusiness.GravarInclusaoAsync(novoDbColaborador, novoDbColaborador.Id);
             var acessosPadrao = _acessoRepository.MontarAcessosPadraoParaColaborador(novoDbColaborador.Id);
             foreach (var acessoPadrao in acessosPadrao)
             {
                 await _acessoRepository.InsertAsync(acessoPadrao);
+                await _gravadorLogBusiness.GravarInclusaoAsync(acessoPadrao, novoDbColaborador.Id);
             }
-            _colaboradorLogadoAccessor.ColaboradorLogado = new BsnColaboradorLogado()
+            _colaboradorLogadoAccessor.ColaboradorLogado = new BsnColaboradorLogado
             {
                 Id = novoDbColaborador.Id,
                 Nome = novoDbColaborador.Nome,
@@ -178,6 +187,7 @@ public class AutorizacaoBusiness : IAutorizacaoBusiness
                 return;
             }
             var alterarDbColaborador = await _colaboradorRepository.SelectByIdAsync(_colaboradorLogadoAccessor.ColaboradorLogado.Id);
+            var dbColaboradorAntes = alterarDbColaborador.DuplicarNaMemoria();
             alterarDbColaborador.Nome = bsnAlterarConta.Nome;
             alterarDbColaborador.Login = bsnAlterarConta.Login;
             if (!string.IsNullOrWhiteSpace(bsnAlterarConta.Senha))
@@ -186,6 +196,7 @@ public class AutorizacaoBusiness : IAutorizacaoBusiness
             }
             alterarDbColaborador.EstaAtivo = true;
             await _colaboradorRepository.UpdateAsync(alterarDbColaborador.Id, alterarDbColaborador);
+            await _gravadorLogBusiness.GravarAlteracaoAutoDiffsAsync(dbColaboradorAntes, alterarDbColaborador, _colaboradorLogadoAccessor.ColaboradorLogado.Id);
             _colaboradorLogadoAccessor.ColaboradorLogado.Nome = bsnAlterarConta.Nome;
             _colaboradorLogadoAccessor.ColaboradorLogado.Login = bsnAlterarConta.Login;
         });

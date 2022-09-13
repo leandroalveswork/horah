@@ -9,7 +9,8 @@ public class SolicitacaoDbModel
     public string? Id { get; set; }
     public string? IdColaboradorSolicitador { get; set; }
     public string? IdTipoSolicitacao { get; set; }
+    public string MotivoSolicitacao { get; set; } = "";
     public string? IdStatusSolicitacao { get; set; }
-    public string? IdColaboradorAprovador { get; set; }
-    public string Motivo { get; set; } = "";
+    public string? IdColaboradorAprovadorOuRejeitador { get; set; }
+    public string MotivoAprovacaoOuRejeitacao { get; set; } = "";
 }

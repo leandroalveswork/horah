@@ -24,6 +24,27 @@ public class BsnColunaLiterais
         return coluna;
     }
 
+    public static BsnColuna ObterColunaEspecificaPorNome(string nomeColecao, string nomeColuna, Type dbModelType)
+    {
+        var props = dbModelType.GetProperties();
+        var propEncontrada = props.FirstOrDefault(x => x.Name == nomeColuna);
+        if (propEncontrada == null)
+        {
+            throw new ArgumentOutOfRangeException("Type " + dbModelType.Name + " não tem a propriedade " + nomeColuna);
+        }
+        return ObterColunaEspecifica(nomeColecao, propEncontrada);
+    }
+
+    public static List<string> ListarIdsColunasSingle(string nomeColecao, string nomeColuna, Type dbModelType)
+    {
+        return new List<string> { ObterColunaEspecificaPorNome(nomeColecao, nomeColuna, dbModelType).Id };
+    }
+
+    public static List<string> ListarIdsColunas(string nomeColecao, IEnumerable<string> nomesColunas, Type dbModelType)
+    {
+        return nomesColunas.Select(x => ObterColunaEspecificaPorNome(nomeColecao, x, dbModelType).Id).ToList();
+    }
+
     public static List<BsnColuna> ListarTodos()
     {
         var lRange = new List<BsnColuna>();
@@ -47,5 +68,11 @@ public class BsnColunaLiterais
     public static BsnColuna? GetByIdOrDefault(string id)
     {
         return ListarTodos().FirstOrDefault(x => x.Id == id);
+    }
+
+    public static List<string> ObterColunasSaoId()
+    {
+        var idsColunasSaoId = BsnColunaLiterais.ListarTodos().Where(x => x.NomeColuna == "Id").Select(x => x.Id);
+        return idsColunasSaoId.ToList();
     }
 }

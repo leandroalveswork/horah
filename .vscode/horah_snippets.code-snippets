@@ -29,7 +29,7 @@
 	},
 	"Params em cascata": {
 		"scope": "csharp",
-		"prefix": "cstpr",
+		"prefix": "hrhcstpr",
 		"body": [
 			"[CascadingParameter(Name = \"SetRefColaboradorLogadoAsync\")]",
 			"public EventCallback<BsnColaboradorLogado> SetRefColaboradorLogadoAsync { get; set; }",
