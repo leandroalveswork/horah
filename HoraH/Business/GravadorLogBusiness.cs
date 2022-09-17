@@ -64,8 +64,9 @@ public class GravadorLogBusiness : IGravadorLogBusiness
                     Id = MongoId.NewMongoId,
                     IdColaboradorInclusao = idColaboradorInclusao,
                     HoraInclusao = hrInclusao,
+                    EstaEsperandoAprovacaoInclusao = false,
                     FoiExcluido = false,
-                    EstaEsperandoAprovacao = false
+                    EstaEsperandoAprovacaoExclusao = false
                 };
                 var dadosInclusao = ExtrairDados(entidade);
                 foreach (var iDadoInclusao in dadosInclusao)
@@ -92,8 +93,9 @@ public class GravadorLogBusiness : IGravadorLogBusiness
                 Id = MongoId.NewMongoId,
                 IdColaboradorInclusao = idColaboradorInclusao,
                 HoraInclusao = hrInclusao,
+                EstaEsperandoAprovacaoInclusao = false,
                 FoiExcluido = false,
-                EstaEsperandoAprovacao = false
+                EstaEsperandoAprovacaoExclusao = false
             };
             var dadosInclusao = ExtrairDados(entidade);
             foreach (var iDadoInclusao in dadosInclusao)
@@ -124,11 +126,11 @@ public class GravadorLogBusiness : IGravadorLogBusiness
                     && x.IdColuna == colunaEId.Id
                     && x.IdTipoRegistro == BsnTipoRegistroLiterais.Inclusao.Id);
                 var dadoInclusaoId = (await _dadoRepository.SelectByLinqExpModelAsync(linqExpDadoInclusaoId)).First();
-                var registroAlterado = await _registroRepository.SelectByIdAsync(dadoInclusaoId.IdRegistroGenerico);
                 var alteracaoRegistroInserido = new AlteracaoRegistroDbModel
                 {
                     Id = MongoId.NewMongoId,
                     IdColaboradorAlteracao = idColaboradorAlteracao,
+                    IdRegistroAlterado = dadoInclusaoId.IdRegistroGenerico,
                     HoraAlteracao = hrAlteracao,
                     EstaEsperandoAprovacao = false
                 };
@@ -159,11 +161,11 @@ public class GravadorLogBusiness : IGravadorLogBusiness
                 && x.IdColuna == colunaEId.Id
                 && x.IdTipoRegistro == BsnTipoRegistroLiterais.Inclusao.Id);
             var dadoInclusaoId = (await _dadoRepository.SelectByLinqExpModelAsync(linqExpDadoInclusaoId)).First();
-            var registroAlterado = await _registroRepository.SelectByIdAsync(dadoInclusaoId.IdRegistroGenerico);
             var alteracaoRegistroInserido = new AlteracaoRegistroDbModel
             {
                 Id = MongoId.NewMongoId,
                 IdColaboradorAlteracao = idColaboradorAlteracao,
+                IdRegistroAlterado = dadoInclusaoId.IdRegistroGenerico,
                 HoraAlteracao = hrAlteracao,
                 EstaEsperandoAprovacao = false
             };
@@ -196,11 +198,11 @@ public class GravadorLogBusiness : IGravadorLogBusiness
                     && x.IdColuna == colunaEId.Id
                     && x.IdTipoRegistro == BsnTipoRegistroLiterais.Inclusao.Id);
                 var dadoInclusaoId = (await _dadoRepository.SelectByLinqExpModelAsync(linqExpDadoInclusaoId)).First();
-                var registroAlterado = await _registroRepository.SelectByIdAsync(dadoInclusaoId.IdRegistroGenerico);
                 var alteracaoRegistroInserido = new AlteracaoRegistroDbModel
                 {
                     Id = MongoId.NewMongoId,
                     IdColaboradorAlteracao = idColaboradorAlteracao,
+                    IdRegistroAlterado = dadoInclusaoId.IdRegistroGenerico,
                     HoraAlteracao = hrAlteracao,
                     EstaEsperandoAprovacao = false
                 };
@@ -233,11 +235,11 @@ public class GravadorLogBusiness : IGravadorLogBusiness
                 && x.IdColuna == colunaEId.Id
                 && x.IdTipoRegistro == BsnTipoRegistroLiterais.Inclusao.Id);
             var dadoInclusaoId = (await _dadoRepository.SelectByLinqExpModelAsync(linqExpDadoInclusaoId)).First();
-            var registroAlterado = await _registroRepository.SelectByIdAsync(dadoInclusaoId.IdRegistroGenerico);
             var alteracaoRegistroInserido = new AlteracaoRegistroDbModel
             {
                 Id = MongoId.NewMongoId,
                 IdColaboradorAlteracao = idColaboradorAlteracao,
+                IdRegistroAlterado = dadoInclusaoId.IdRegistroGenerico,
                 HoraAlteracao = hrAlteracao,
                 EstaEsperandoAprovacao = false
             };
@@ -272,11 +274,11 @@ public class GravadorLogBusiness : IGravadorLogBusiness
                     && x.IdColuna == colunaEId.Id
                     && x.IdTipoRegistro == BsnTipoRegistroLiterais.Inclusao.Id);
                 var dadoInclusaoId = (await _dadoRepository.SelectByLinqExpModelAsync(linqExpDadoInclusaoId)).First();
-                var registroVisualizado = await _registroRepository.SelectByIdAsync(dadoInclusaoId.IdRegistroGenerico);
                 var visualizacaoRegistroInserido = new VisualizacaoRegistroDbModel
                 {
                     Id = MongoId.NewMongoId,
                     IdColaboradorVisualizacao = idColaboradorVisualizacao,
+                    IdRegistroVisualizado = dadoInclusaoId.IdRegistroGenerico,
                     HoraVisualizacao = hrVisualizacao,
                 };
                 var dadosEntidadeFiltrado = dadosEntidade.Where(x => idsColunasVisualizacao.Contains(x.IdColuna));
@@ -306,11 +308,11 @@ public class GravadorLogBusiness : IGravadorLogBusiness
                 && x.IdColuna == colunaEId.Id
                 && x.IdTipoRegistro == BsnTipoRegistroLiterais.Inclusao.Id);
             var dadoInclusaoId = (await _dadoRepository.SelectByLinqExpModelAsync(linqExpDadoInclusaoId)).First();
-            var registroVisualizado = await _registroRepository.SelectByIdAsync(dadoInclusaoId.IdRegistroGenerico);
             var visualizacaoRegistroInserido = new VisualizacaoRegistroDbModel
             {
                 Id = MongoId.NewMongoId,
                 IdColaboradorVisualizacao = idColaboradorVisualizacao,
+                IdRegistroVisualizado = dadoInclusaoId.IdRegistroGenerico,
                 HoraVisualizacao = hrVisualizacao,
             };
             var dadosEntidadeFiltrado = dadosEntidade.Where(x => idsColunasVisualizacao.Contains(x.IdColuna));
@@ -325,13 +327,155 @@ public class GravadorLogBusiness : IGravadorLogBusiness
         }
     }
 
-    public Task<string> GravarMuitasVisualizacoesAsync<TDbModel>(List<TDbModel> entidadesVisualizadas, List<string> idsColunasVisualizacao, string idColaboradorVisualizacao)
+    public async Task<List<string>> GravarMuitasVisualizacoesAsync<TDbModel>(List<TDbModel> entidadesVisualizadas, List<string> idsColunasVisualizacao, string idColaboradorVisualizacao)
     {
-        throw new NotImplementedException();
+        var uowSession = _dbSessionAccessor.DbSession;
+        var nomeColecao = typeof(TDbModel).Name.Split("DbModel")[0];
+        if (uowSession == null)
+        {
+            await _uow.StartTransactionAsync();
+            try
+            {
+                var hrVisualizacao = DateTime.Now;
+                var visualizacoesGravadas = new List<BsnVisualizacaoGravada>();
+                foreach (var iEntidadeVis in entidadesVisualizadas)
+                {
+                    visualizacoesGravadas.Add(new BsnVisualizacaoGravada { DadosExtraidos = ExtrairDados(iEntidadeVis) });
+                }
+                var colunaEId = BsnColunaLiterais.ObterColunaEspecificaPorNome(nomeColecao, "Id", typeof(TDbModel));
+                var idsSerializadosEntidades = visualizacoesGravadas.Select(x => x.ObterIdSerializadoJson(colunaEId)).ToList();
+                var linqExpDadosInclusaoId = new LinqExpModel<DadoDbModel>(x => idsSerializadosEntidades.Contains(x.ValorSerializadoJson)
+                    && x.IdColuna == colunaEId.Id
+                    && x.IdTipoRegistro == BsnTipoRegistroLiterais.Inclusao.Id);
+                var dadosInclusaoId = await _dadoRepository.SelectByLinqExpModelAsync(linqExpDadosInclusaoId);
+                foreach (var iVisGravada in visualizacoesGravadas)
+                {
+                    iVisGravada.DadoEIdDb = dadosInclusaoId.First(x => x.ValorSerializadoJson == iVisGravada.ObterIdSerializadoJson(colunaEId));
+                }
+                var insercaoManyVisualizacoes = new List<VisualizacaoRegistroDbModel>();
+                var insercaoManyDados = new List<DadoDbModel>();
+                var retornoIds = new List<string>();
+                foreach (var iVisGravada in visualizacoesGravadas)
+                {
+                    var visualizacaoRegistroInserido = new VisualizacaoRegistroDbModel
+                    {
+                        Id = MongoId.NewMongoId,
+                        IdColaboradorVisualizacao = idColaboradorVisualizacao,
+                        IdRegistroVisualizado = iVisGravada.DadoEIdDb.IdRegistroGenerico,
+                        HoraVisualizacao = hrVisualizacao,
+                    };
+                    insercaoManyVisualizacoes.Add(visualizacaoRegistroInserido);
+                    var dadosEntidadeFiltrado = iVisGravada.DadosExtraidos.Where(x => idsColunasVisualizacao.Contains(x.IdColuna));
+                    foreach (var iDadoEntidade in dadosEntidadeFiltrado)
+                    {
+                        iDadoEntidade.IdTipoRegistro = BsnTipoRegistroLiterais.Visualizacao.Id;
+                        iDadoEntidade.IdRegistroGenerico = visualizacaoRegistroInserido.Id;
+                    }
+                    insercaoManyDados.AddRange(dadosEntidadeFiltrado);
+                    retornoIds.Add(visualizacaoRegistroInserido.Id);
+                }
+                await _visualizacaoRegistroRepository.InsertManyAsync(insercaoManyVisualizacoes);
+                await _dadoRepository.InsertManyAsync(insercaoManyDados);
+                await _uow.CommitTransactionAsync();
+                return retornoIds;
+            }
+            catch (Exception)
+            {
+                await _uow.RollbackTransactionAsync();
+                throw;
+            }
+        }
+        else
+        {
+            var hrVisualizacao = DateTime.Now;
+            var visualizacoesGravadas = new List<BsnVisualizacaoGravada>();
+            foreach (var iEntidadeVis in entidadesVisualizadas)
+            {
+                visualizacoesGravadas.Add(new BsnVisualizacaoGravada { DadosExtraidos = ExtrairDados(iEntidadeVis) });
+            }
+            var colunaEId = BsnColunaLiterais.ObterColunaEspecificaPorNome(nomeColecao, "Id", typeof(TDbModel));
+            var idsSerializadosEntidades = visualizacoesGravadas.Select(x => x.ObterIdSerializadoJson(colunaEId)).ToList();
+            var linqExpDadosInclusaoId = new LinqExpModel<DadoDbModel>(x => idsSerializadosEntidades.Contains(x.ValorSerializadoJson)
+                && x.IdColuna == colunaEId.Id
+                && x.IdTipoRegistro == BsnTipoRegistroLiterais.Inclusao.Id);
+            var dadosInclusaoId = await _dadoRepository.SelectByLinqExpModelAsync(linqExpDadosInclusaoId);
+            foreach (var iVisGravada in visualizacoesGravadas)
+            {
+                iVisGravada.DadoEIdDb = dadosInclusaoId.First(x => x.ValorSerializadoJson == iVisGravada.ObterIdSerializadoJson(colunaEId));
+            }
+            var insercaoManyVisualizacoes = new List<VisualizacaoRegistroDbModel>();
+            var insercaoManyDados = new List<DadoDbModel>();
+            var retornoIds = new List<string>();
+            foreach (var iVisGravada in visualizacoesGravadas)
+            {
+                var visualizacaoRegistroInserido = new VisualizacaoRegistroDbModel
+                {
+                    Id = MongoId.NewMongoId,
+                    IdColaboradorVisualizacao = idColaboradorVisualizacao,
+                    IdRegistroVisualizado = iVisGravada.DadoEIdDb.IdRegistroGenerico,
+                    HoraVisualizacao = hrVisualizacao,
+                };
+                insercaoManyVisualizacoes.Add(visualizacaoRegistroInserido);
+                var dadosEntidadeFiltrado = iVisGravada.DadosExtraidos.Where(x => idsColunasVisualizacao.Contains(x.IdColuna));
+                foreach (var iDadoEntidade in dadosEntidadeFiltrado)
+                {
+                    iDadoEntidade.IdTipoRegistro = BsnTipoRegistroLiterais.Visualizacao.Id;
+                    iDadoEntidade.IdRegistroGenerico = visualizacaoRegistroInserido.Id;
+                }
+                insercaoManyDados.AddRange(dadosEntidadeFiltrado);
+                retornoIds.Add(visualizacaoRegistroInserido.Id);
+            }
+            await _visualizacaoRegistroRepository.InsertManyAsync(insercaoManyVisualizacoes);
+            await _dadoRepository.InsertManyAsync(insercaoManyDados);
+            return retornoIds;
+        }
     }
 
-    public Task<string> GravarExclusaoAsync(string nomeTabela, string idEntidade, string idColaboradorExclusao)
+    public async Task GravarExclusaoAsync<TDbModel>(string idEntidade, string idColaboradorExclusao)
     {
-        throw new NotImplementedException();
+        var uowSession = _dbSessionAccessor.DbSession;
+        var nomeColecao = typeof(TDbModel).Name.Split("DbModel")[0];
+        if (uowSession == null)
+        {
+            await _uow.StartTransactionAsync();
+            try
+            {
+                var hrExclusao = DateTime.Now;
+                var colunaEId = BsnColunaLiterais.ObterColunaEspecificaPorNome(nomeColecao, "Id", typeof(TDbModel));
+                var entidadeIdSerializadoJson = idEntidade.AsSerializadoJson();
+                var linqExpDadoInclusaoId = new LinqExpModel<DadoDbModel>(x => x.ValorSerializadoJson == entidadeIdSerializadoJson
+                    && x.IdColuna == colunaEId.Id
+                    && x.IdTipoRegistro == BsnTipoRegistroLiterais.Inclusao.Id);
+                var dadoInclusaoId = (await _dadoRepository.SelectByLinqExpModelAsync(linqExpDadoInclusaoId)).First();
+                var registroExcluidoDb = await _registroRepository.SelectByIdAsync(dadoInclusaoId.IdRegistroGenerico);
+                registroExcluidoDb.FoiExcluido = true;
+                registroExcluidoDb.IdColaboradorExclusao = idColaboradorExclusao;
+                registroExcluidoDb.HoraExclusao = hrExclusao;
+                registroExcluidoDb.EstaEsperandoAprovacaoExclusao = false;
+                await _registroRepository.UpdateAsync(registroExcluidoDb.Id, registroExcluidoDb);
+                await _uow.CommitTransactionAsync();
+            }
+            catch (Exception)
+            {
+                await _uow.RollbackTransactionAsync();
+                throw;
+            }
+        }
+        else
+        {   
+            var hrExclusao = DateTime.Now;
+            var colunaEId = BsnColunaLiterais.ObterColunaEspecificaPorNome(nomeColecao, "Id", typeof(TDbModel));
+            var entidadeIdSerializadoJson = idEntidade.AsSerializadoJson();
+            var linqExpDadoInclusaoId = new LinqExpModel<DadoDbModel>(x => x.ValorSerializadoJson == entidadeIdSerializadoJson
+                && x.IdColuna == colunaEId.Id
+                && x.IdTipoRegistro == BsnTipoRegistroLiterais.Inclusao.Id);
+            var dadoInclusaoId = (await _dadoRepository.SelectByLinqExpModelAsync(linqExpDadoInclusaoId)).First();
+            var registroExcluidoDb = await _registroRepository.SelectByIdAsync(dadoInclusaoId.IdRegistroGenerico);
+            registroExcluidoDb.FoiExcluido = true;
+            registroExcluidoDb.IdColaboradorExclusao = idColaboradorExclusao;
+            registroExcluidoDb.HoraExclusao = hrExclusao;
+            registroExcluidoDb.EstaEsperandoAprovacaoExclusao = false;
+            await _registroRepository.UpdateAsync(registroExcluidoDb.Id, registroExcluidoDb);
+        }
     }
 }

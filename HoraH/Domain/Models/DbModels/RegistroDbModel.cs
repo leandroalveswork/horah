@@ -15,7 +15,8 @@ public class RegistroDbModel
 
     #region Modulo Solicitacao
 
-    public bool EstaEsperandoAprovacao { get; set; }
+    public bool EstaEsperandoAprovacaoInclusao { get; set; }
+    public bool EstaEsperandoAprovacaoExclusao { get; set; }
 
     #endregion
 }

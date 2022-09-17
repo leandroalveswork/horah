@@ -106,7 +106,7 @@ public class LogsBusiness : ILogsBusiness
 
     private async Task<BsnResult<List<BsnRelacaoDeLog>>> PesquisarOpInclusaoAsync(BsnPesquisaDeLogs pesquisa, TimeZoneInfo timeZone)
     {
-        var linqExpFiltro = new LinqExpModel<RegistroDbModel>(x => !x.EstaEsperandoAprovacao);
+        var linqExpFiltro = new LinqExpModel<RegistroDbModel>(x => !x.EstaEsperandoAprovacaoInclusao);
         var filtroColaboradores = new BsnPesquisaDeColaborador { Nome = pesquisa.NomeColaborador, EstaAtivo = true };
         var resColaboradoresRelac = await _colaboradorBusiness.PesquisarAsync(filtroColaboradores);
         if (!resColaboradoresRelac.EstaOk)
@@ -346,7 +346,7 @@ public class LogsBusiness : ILogsBusiness
 
     private async Task<BsnResult<List<BsnRelacaoDeLog>>> PesquisarOpExclusaoAsync(BsnPesquisaDeLogs pesquisa, TimeZoneInfo timeZone)
     {
-        var linqExpFiltro = new LinqExpModel<RegistroDbModel>(x => !x.EstaEsperandoAprovacao && x.FoiExcluido);
+        var linqExpFiltro = new LinqExpModel<RegistroDbModel>(x => !x.EstaEsperandoAprovacaoExclusao && x.FoiExcluido);
         var filtroColaboradores = new BsnPesquisaDeColaborador { Nome = pesquisa.NomeColaborador, EstaAtivo = true };
         var resColaboradoresRelac = await _colaboradorBusiness.PesquisarAsync(filtroColaboradores);
         if (!resColaboradoresRelac.EstaOk)
@@ -429,7 +429,7 @@ public class LogsBusiness : ILogsBusiness
         var idsColunasSaoId = BsnColunaLiterais.ObterColunasSaoId();
         if (idOperacao == BsnOperacaoLiterais.Inclusao.Id)
         {
-            var linqExpFiltro = new LinqExpModel<RegistroDbModel>(x => !x.EstaEsperandoAprovacao && x.Id == idRegistro);
+            var linqExpFiltro = new LinqExpModel<RegistroDbModel>(x => !x.EstaEsperandoAprovacaoInclusao && x.Id == idRegistro);
             var registrosDb = await _registroRepository.SelectByLinqExpModelAsync(linqExpFiltro);
             if (registrosDb == null || !registrosDb.Any())
             {
@@ -556,7 +556,7 @@ public class LogsBusiness : ILogsBusiness
         }
         if (idOperacao == BsnOperacaoLiterais.Exclusao.Id)
         {
-            var linqExpFiltro = new LinqExpModel<RegistroDbModel>(x => !x.EstaEsperandoAprovacao && x.FoiExcluido && x.Id == idRegistro);
+            var linqExpFiltro = new LinqExpModel<RegistroDbModel>(x => !x.EstaEsperandoAprovacaoExclusao && x.FoiExcluido && x.Id == idRegistro);
             var registrosDb = await _registroRepository.SelectByLinqExpModelAsync(linqExpFiltro);
             if (registrosDb == null || !registrosDb.Any())
             {
