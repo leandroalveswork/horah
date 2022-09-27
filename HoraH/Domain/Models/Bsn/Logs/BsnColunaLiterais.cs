@@ -15,11 +15,11 @@ public class BsnColunaLiterais
     {
         var coluna = new BsnColuna
         {
-            Id = (nomeColecao + "_" + proptInfo.Name).GetHashCode().ToString(),
+            Id = (nomeColecao + "_" + proptInfo.Name).AsStringId().ToString(),
             Nome = nomeColecao + "_" + proptInfo.Name,
             NomeTabela = nomeColecao,
-            NomeColuna = proptInfo.Name,
-            TipoOriginal = proptInfo.PropertyType
+            NomeColuna = proptInfo.Name
+            // TipoOriginal = proptInfo.PropertyType
         };
         return coluna;
     }
@@ -32,7 +32,14 @@ public class BsnColunaLiterais
         {
             throw new ArgumentOutOfRangeException("Type " + dbModelType.Name + " não tem a propriedade " + nomeColuna);
         }
-        return ObterColunaEspecifica(nomeColecao, propEncontrada);
+        var colEspecifica = ObterColunaEspecifica(nomeColecao, propEncontrada);
+        return new BsnColuna
+        {
+            Id = colEspecifica.Id,
+            Nome = colEspecifica.Nome,
+            NomeColuna = colEspecifica.NomeColuna,
+            NomeTabela = colEspecifica.NomeTabela
+        };
     }
 
     public static List<string> ListarIdsColunasSingle(string nomeColecao, string nomeColuna, Type dbModelType)
@@ -56,7 +63,8 @@ public class BsnColunaLiterais
         lRange.AddRange(ObterColunasDaDbModel("AlteracaoRegistro", typeof(AlteracaoRegistroDbModel)));
         lRange.AddRange(ObterColunasDaDbModel("VisualizacaoRegistro", typeof(VisualizacaoRegistroDbModel)));
         lRange.AddRange(ObterColunasDaDbModel("Solicitacao", typeof(SolicitacaoDbModel)));
-        lRange.AddRange(ObterColunasDaDbModel("ItemSolicitacao", typeof(ItemSolicitacaoDbModel)));
+        lRange.AddRange(ObterColunasDaDbModel("AcessoVirtual", typeof(AcessoVirtualDbModel)));
+        lRange.AddRange(ObterColunasDaDbModel("PresencaVirtual", typeof(PresencaVirtualDbModel)));
         return lRange;
     }
     

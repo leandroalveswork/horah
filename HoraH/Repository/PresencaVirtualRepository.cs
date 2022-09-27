@@ -7,9 +7,9 @@ using HoraH.Repository.Common;
 using MongoDB.Driver;
 
 namespace HoraH.Repository;
-public class ItemSolicitacaoRepository : RepositoryBase<ItemSolicitacaoDbModel>, IItemSolicitacaoRepository
+public class PresencaVirtualRepository : RepositoryBase<PresencaVirtualDbModel>, IPresencaVirtualRepository
 {
-    public ItemSolicitacaoRepository(IDbClientAccessor dbClientAccessor,
+    public PresencaVirtualRepository(IDbClientAccessor dbClientAccessor,
         IAppConfiguration appConfiguration,
         IDbSessionAccessor dbSessionAccessor)
         : base(dbClientAccessor, appConfiguration, dbSessionAccessor)
@@ -18,10 +18,10 @@ public class ItemSolicitacaoRepository : RepositoryBase<ItemSolicitacaoDbModel>,
 
     protected override string GetNomeColecEntidade()
     {
-        return _appConfiguration.NomeColecItemSolicitacao;
+        return _appConfiguration.NomeColecPresencaVirtual;
     }
 
-    protected override Expression<Func<ItemSolicitacaoDbModel, bool>> GetMatchesId(string id)
+    protected override Expression<Func<PresencaVirtualDbModel, bool>> GetMatchesId(string id)
     {
         return x => x.Id == id;
     }

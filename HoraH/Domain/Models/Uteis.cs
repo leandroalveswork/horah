@@ -56,6 +56,31 @@ public static class Uteis
         var vlParam = divisaoPorIgual[1];
         return vlParam;
     }
+
+    public static int AsStringId(this string s)
+    {
+        var soma = 0;
+        var fator = 7;
+        var potencia10 = 1;
+        // acumular soma de cada caractere da string transformado em int
+        for (int idxS = 0; idxS < s.Length; idxS++)
+        {
+            soma += (s[idxS]) * fator * potencia10;
+            // incrementar fator
+            fator++;
+            if (fator >= 14)
+            {
+                fator = 7 + (soma % 5);
+            }
+            // incrementar potencia 10
+            potencia10 *= 10;
+            if (potencia10 >= 100000)
+            {
+                potencia10 = 1;
+            }
+        }
+        return soma;
+    }
     
     public static string RemoverAcentuacao(this string texto)
     {

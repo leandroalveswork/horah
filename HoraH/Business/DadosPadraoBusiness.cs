@@ -5,6 +5,7 @@ using HoraH.Domain.Interfaces.UnitOfWork;
 using HoraH.Domain.Models;
 using HoraH.Domain.Models.Bsn;
 using HoraH.Domain.Models.Bsn.Funcionalidade;
+using HoraH.Domain.Models.Bsn.Logs;
 using HoraH.Domain.Models.DbModels;
 
 namespace HoraH.Business;
@@ -15,17 +16,20 @@ public class DadosPadraoBusiness : IDadosPadraoBusiness
     private readonly IAcessoRepository _acessoRepository;
     private readonly IUnitOfWork _uow;
     private readonly IAutorizacaoBusiness _autorizacaoBusiness;
+    private readonly IGravadorLogBusiness _gravadorLogBusiness;
     public DadosPadraoBusiness(IAppConfiguration appConfiguration,
                                IColaboradorRepository colaboradorRepository,
                                IAcessoRepository acessoRepository,
                                IUnitOfWork uow,
-                               IAutorizacaoBusiness autorizacaoBusiness)
+                               IAutorizacaoBusiness autorizacaoBusiness,
+                               IGravadorLogBusiness gravadorLogBusiness)
     {
         _appConfiguration = appConfiguration;
         _colaboradorRepository = colaboradorRepository;
         _acessoRepository = acessoRepository;
         _uow = uow;
         _autorizacaoBusiness = autorizacaoBusiness;
+        _gravadorLogBusiness = gravadorLogBusiness;
     }
 
     private async Task CompletarAcessosDoAdminAsync(string idDoAdmin)
@@ -44,12 +48,15 @@ public class DadosPadraoBusiness : IDadosPadraoBusiness
                     EstaPermitido = true
                 };
                 await _acessoRepository.InsertAsync(inserirAcessoDb);
+                await _gravadorLogBusiness.GravarInclusaoAsync(inserirAcessoDb, idDoAdmin);
                 continue;
             }
             if (!acessoAFuncionalidade.EstaPermitido)
             {
                 acessoAFuncionalidade.EstaPermitido = true;
                 await _acessoRepository.UpdateAsync(acessoAFuncionalidade.Id, acessoAFuncionalidade);
+                var idColunaEstaPermitido = BsnColunaLiterais.ListarIdsColunasSingle("Acesso", "EstaPermitido", typeof(AcessoDbModel));
+                await _gravadorLogBusiness.GravarAlteracaoAsync(acessoAFuncionalidade, idColunaEstaPermitido, idDoAdmin);
             }
         }
     }
@@ -69,6 +76,7 @@ public class DadosPadraoBusiness : IDadosPadraoBusiness
                 EstaAtivo = true
             };
             await _colaboradorRepository.InsertAsync(inserirAdminDb);
+            await _gravadorLogBusiness.GravarInclusaoAsync(inserirAdminDb, inserirAdminDb.Id);
             await CompletarAcessosDoAdminAsync(inserirAdminDb.Id);
             return;
         }
@@ -77,19 +85,19 @@ public class DadosPadraoBusiness : IDadosPadraoBusiness
             || colaboradorAdminBanco.Senha != senhaDoAdminCriptografada
             || !colaboradorAdminBanco.EstaAtivo)
         {
+            var colaboradorAntesSalvar = colaboradorAdminBanco.DuplicarNaMemoria();
             colaboradorAdminBanco.Nome = _appConfiguration.ColaboradorAdmin.Nome;
             colaboradorAdminBanco.Login = _appConfiguration.ColaboradorAdmin.Login;
             colaboradorAdminBanco.Senha = senhaDoAdminCriptografada;
             colaboradorAdminBanco.EstaAtivo = true;
             await _colaboradorRepository.UpdateAsync(colaboradorAdminBanco.Id, colaboradorAdminBanco);
+            await _gravadorLogBusiness.GravarAlteracaoAutoDiffsAsync(colaboradorAntesSalvar, colaboradorAdminBanco, colaboradorAdminBanco.Id);
         }
         await CompletarAcessosDoAdminAsync(colaboradorAdminBanco.Id);
     }
 
     public async Task CompletarAsync()
     {
-        await _uow.ExecuteTransactionAndReturnOkAsync(async () => {
-            await CompletarAdminAsync();
-        });
+        await _uow.ExecuteTransactionAndReturnOkAsync(CompletarAdminAsync);
     }
 }

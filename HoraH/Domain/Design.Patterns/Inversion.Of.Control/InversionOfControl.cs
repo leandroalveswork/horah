@@ -6,10 +6,12 @@ using HoraH.Domain.Design.Patterns.Strategy;
 using HoraH.Domain.Interfaces.Accessor;
 using HoraH.Domain.Interfaces.Business;
 using HoraH.Domain.Interfaces.Configuration;
+using HoraH.Domain.Interfaces.Proxy;
 using HoraH.Domain.Interfaces.Repository;
 using HoraH.Domain.Interfaces.UnitOfWork;
 using HoraH.Domain.Models.Bsn;
 using HoraH.Domain.Models.Settings;
+using HoraH.Proxy;
 using HoraH.Repository;
 
 namespace HoraH.Domain.Design.Patterns.Inversion.Of.Control;
@@ -19,6 +21,12 @@ public static class InversionOfControl
     {
         services.Configure<SetgColaboradorAdmin>(configuration.GetSection("ColaboradorAdmin"));
         services.AddSingleton<IAppConfiguration, AppConfiguration>();
+        return services;
+    }
+
+    public static IServiceCollection InjetarProxy(this IServiceCollection services)
+    {
+        services.AddScoped<IColunaLiteralProxy, ColunaLiteralProxy>();
         return services;
     }
 
@@ -45,8 +53,9 @@ public static class InversionOfControl
         services.AddScoped<IRegistroRepository, RegistroRepository>();
         services.AddScoped<IAlteracaoRegistroRepository, AlteracaoRegistroRepository>();
         services.AddScoped<IVisualizacaoRegistroRepository, VisualizacaoRegistroRepository>();
-        services.AddScoped<IItemSolicitacaoRepository, ItemSolicitacaoRepository>();
         services.AddScoped<ISolicitacaoRepository, SolicitacaoRepository>();
+        services.AddScoped<IAcessoVirtualRepository, AcessoVirtualRepository>();
+        services.AddScoped<IPresencaVirtualRepository, PresencaVirtualRepository>();
         return services;
     }
     
@@ -58,6 +67,7 @@ public static class InversionOfControl
         services.AddScoped<IDadosPadraoBusiness, DadosPadraoBusiness>();
         services.AddScoped<IPresencaBusiness, PresencaBusiness>();
         services.AddScoped<ILogsBusiness, LogsBusiness>();
+        services.AddScoped<ISolicitacaoBusiness, SolicitacaoBusiness>();
         return services;
     }
 }

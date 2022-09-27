@@ -241,6 +241,7 @@
             minimoMinutos = null;
             maximoMinutos = null;
             ePesquisaPorData = false;
+            ePesquisaPorIntervalo = false;
             dataInicio = null;
             dataFim = null;
             idAutopreencher = "";
@@ -357,8 +358,8 @@
             };
             if (!ePesquisaPorIntervalo)
             {
-                pesquisaEspecifica.IdMesFimInclusive = idMesFim;
-                pesquisaEspecifica.IdAnoFimInclusive = idAnoFim;
+                pesquisaEspecifica.IdMesFimInclusive = idMesInicio;
+                pesquisaEspecifica.IdAnoFimInclusive = idAnoInicio;
             }
             pesquisaSubmit = pesquisaEspecifica;
         }

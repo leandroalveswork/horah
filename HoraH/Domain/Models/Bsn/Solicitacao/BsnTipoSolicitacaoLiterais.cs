@@ -6,26 +6,31 @@ public class BsnTipoSolicitacaoLiterais
         Id = "1",
         Nome = "Liberar Acesso"
     };
-    public static readonly BsnTipoSolicitacao IncluirPresencaFaltante = new BsnTipoSolicitacao
+    public static readonly BsnTipoSolicitacao BloquearAcesso = new BsnTipoSolicitacao
     {
         Id = "2",
-        Nome = "Incluir Presença Faltante"
+        Nome = "Bloquear Acesso"
     };
-    public static readonly BsnTipoSolicitacao AlterarPresencaErrada = new BsnTipoSolicitacao
+    public static readonly BsnTipoSolicitacao IncluirPresenca = new BsnTipoSolicitacao
     {
         Id = "3",
-        Nome = "Alterar Presença Errada"
+        Nome = "Incluir Presença"
     };
-    public static readonly BsnTipoSolicitacao ExcluirPresencaErrada = new BsnTipoSolicitacao
+    public static readonly BsnTipoSolicitacao AlterarPresenca = new BsnTipoSolicitacao
     {
         Id = "4",
-        Nome = "Excluir Presença Errada"
+        Nome = "Alterar Presença"
+    };
+    public static readonly BsnTipoSolicitacao ExcluirPresenca = new BsnTipoSolicitacao
+    {
+        Id = "5",
+        Nome = "Excluir Presença"
     };
     public static List<BsnTipoSolicitacao> ListarTodos()
     {
         return new List<BsnTipoSolicitacao>
         {
-            LiberarAcesso, IncluirPresencaFaltante, AlterarPresencaErrada, ExcluirPresencaErrada
+            LiberarAcesso, BloquearAcesso, IncluirPresenca, AlterarPresenca, ExcluirPresenca
         };
     }
     

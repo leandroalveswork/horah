@@ -7,5 +7,5 @@ public class BsnColuna
     public string Nome { get; set; } = "";
     public string NomeTabela { get; set; } = "";
     public string NomeColuna { get; set; } = "";
-    public Type TipoOriginal { get; set; }
+    // public Type TipoOriginal { get; set; }
 }

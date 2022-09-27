@@ -12,11 +12,4 @@ public class RegistroDbModel
     public bool FoiExcluido { get; set; }
     public string? IdColaboradorExclusao { get; set; }
     public DateTime? HoraExclusao { get; set; }
-
-    #region Modulo Solicitacao
-
-    public bool EstaEsperandoAprovacaoInclusao { get; set; }
-    public bool EstaEsperandoAprovacaoExclusao { get; set; }
-
-    #endregion
 }

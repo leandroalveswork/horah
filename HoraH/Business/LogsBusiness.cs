@@ -31,7 +31,7 @@ public class LogsBusiness : ILogsBusiness
 
     public async Task<BsnResult<List<BsnRelacaoDeLog>>> PesquisarAsync(BsnPesquisaDeLogs pesquisa, TimeZoneInfo timeZone)
     {
-        var resValid = pesquisa.ValidarRangeData();
+        var resValid = pesquisa.Periodo.ValidarRangesEObrigatorios();
         if (!resValid.EstaOk)
         {
             return BsnResult<List<BsnRelacaoDeLog>>.Erro(resValid.Mensagem);
@@ -106,7 +106,7 @@ public class LogsBusiness : ILogsBusiness
 
     private async Task<BsnResult<List<BsnRelacaoDeLog>>> PesquisarOpInclusaoAsync(BsnPesquisaDeLogs pesquisa, TimeZoneInfo timeZone)
     {
-        var linqExpFiltro = new LinqExpModel<RegistroDbModel>(x => !x.EstaEsperandoAprovacaoInclusao);
+        var linqExpFiltro = new LinqExpModel<RegistroDbModel>();
         var filtroColaboradores = new BsnPesquisaDeColaborador { Nome = pesquisa.NomeColaborador, EstaAtivo = true };
         var resColaboradoresRelac = await _colaboradorBusiness.PesquisarAsync(filtroColaboradores);
         if (!resColaboradoresRelac.EstaOk)
@@ -142,15 +142,17 @@ public class LogsBusiness : ILogsBusiness
             }
             linqExpFiltro.AppendAndAlso(x => idsRegistrosComId.Contains(x.Id));
         }
-        if (pesquisa.DataOperacaoInicio.HasValue)
-        {
-            linqExpFiltro.AppendAndAlso(x => BsnDateTimeModel.FromDb(x.HoraInclusao, timeZone).Value >= pesquisa.DataOperacaoInicio.Value.Date);
-        }
-        if (pesquisa.DataOperacaoFim.HasValue)
-        {
-            linqExpFiltro.AppendAndAlso(x => BsnDateTimeModel.FromDb(x.HoraInclusao, timeZone).Value < pesquisa.DataOperacaoFim.Value.Date.AddDays(1));
-        }
-        var registrosDb = await _registroRepository.SelectByLinqExpModelAsync(linqExpFiltro);
+        // if (pesquisa.DataOperacaoInicio.HasValue)
+        // {
+        //     linqExpFiltro.AppendAndAlso(x => BsnDateTimeModel.FromDb(x.HoraInclusao, timeZone).Value >= pesquisa.DataOperacaoInicio.Value.Date);
+        // }
+        // if (pesquisa.DataOperacaoFim.HasValue)
+        // {
+        //     linqExpFiltro.AppendAndAlso(x => BsnDateTimeModel.FromDb(x.HoraInclusao, timeZone).Value < pesquisa.DataOperacaoFim.Value.Date.AddDays(1));
+        // }
+        var registrosDb = (await _registroRepository.SelectByLinqExpModelAsync(linqExpFiltro))
+            .Where(x => pesquisa.Periodo.DateEValido(BsnDateTimeModel.FromDb(x.HoraInclusao, timeZone).Value));
+
         var idsRegistros = registrosDb.Select(x => x.Id);
         var linqExpDadosDosRegistros = new LinqExpModel<DadoDbModel>(x => idsRegistros.Contains(x.IdRegistroGenerico) && x.IdTipoRegistro == BsnTipoRegistroLiterais.Inclusao.Id);
         var dadosDosRegistrosDb = await _dadoRepository.SelectByLinqExpModelAsync(linqExpDadosDosRegistros);
@@ -186,7 +188,7 @@ public class LogsBusiness : ILogsBusiness
     
     private async Task<BsnResult<List<BsnRelacaoDeLog>>> PesquisarOpAlteracaoAsync(BsnPesquisaDeLogs pesquisa, TimeZoneInfo timeZone)
     {
-        var linqExpFiltro = new LinqExpModel<AlteracaoRegistroDbModel>(x => !x.EstaEsperandoAprovacao);
+        var linqExpFiltro = new LinqExpModel<AlteracaoRegistroDbModel>();
         var filtroColaboradores = new BsnPesquisaDeColaborador { Nome = pesquisa.NomeColaborador, EstaAtivo = true };
         var resColaboradoresRelac = await _colaboradorBusiness.PesquisarAsync(filtroColaboradores);
         if (!resColaboradoresRelac.EstaOk)
@@ -222,15 +224,16 @@ public class LogsBusiness : ILogsBusiness
             }
             linqExpFiltro.AppendAndAlso(x => idsRegistrosComId.Contains(x.IdRegistroAlterado));
         }
-        if (pesquisa.DataOperacaoInicio.HasValue)
-        {
-            linqExpFiltro.AppendAndAlso(x => BsnDateTimeModel.FromDb(x.HoraAlteracao, timeZone).Value >= pesquisa.DataOperacaoInicio.Value.Date);
-        }
-        if (pesquisa.DataOperacaoFim.HasValue)
-        {
-            linqExpFiltro.AppendAndAlso(x => BsnDateTimeModel.FromDb(x.HoraAlteracao, timeZone).Value < pesquisa.DataOperacaoFim.Value.Date.AddDays(1));
-        }
-        var alteracoesRegistrosDb = await _alteracaoRegistroRepository.SelectByLinqExpModelAsync(linqExpFiltro);
+        // if (pesquisa.DataOperacaoInicio.HasValue)
+        // {
+        //     linqExpFiltro.AppendAndAlso(x => BsnDateTimeModel.FromDb(x.HoraAlteracao, timeZone).Value >= pesquisa.DataOperacaoInicio.Value.Date);
+        // }
+        // if (pesquisa.DataOperacaoFim.HasValue)
+        // {
+        //     linqExpFiltro.AppendAndAlso(x => BsnDateTimeModel.FromDb(x.HoraAlteracao, timeZone).Value < pesquisa.DataOperacaoFim.Value.Date.AddDays(1));
+        // }
+        var alteracoesRegistrosDb = (await _alteracaoRegistroRepository.SelectByLinqExpModelAsync(linqExpFiltro))
+            .Where(x => pesquisa.Periodo.DateEValido(BsnDateTimeModel.FromDb(x.HoraAlteracao, timeZone).Value));
         var idsRegistros = alteracoesRegistrosDb.Select(x => x.IdRegistroAlterado).Distinct();
         var linqExpDadosDosRegistros = new LinqExpModel<DadoDbModel>(x => idsRegistros.Contains(x.IdRegistroGenerico) && x.IdTipoRegistro == BsnTipoRegistroLiterais.Inclusao.Id);
         var dadosDosRegistrosDb = await _dadoRepository.SelectByLinqExpModelAsync(linqExpDadosDosRegistros);
@@ -302,15 +305,16 @@ public class LogsBusiness : ILogsBusiness
             }
             linqExpFiltro.AppendAndAlso(x => idsRegistrosComId.Contains(x.IdRegistroVisualizado));
         }
-        if (pesquisa.DataOperacaoInicio.HasValue)
-        {
-            linqExpFiltro.AppendAndAlso(x => BsnDateTimeModel.FromDb(x.HoraVisualizacao, timeZone).Value >= pesquisa.DataOperacaoInicio.Value.Date);
-        }
-        if (pesquisa.DataOperacaoFim.HasValue)
-        {
-            linqExpFiltro.AppendAndAlso(x => BsnDateTimeModel.FromDb(x.HoraVisualizacao, timeZone).Value < pesquisa.DataOperacaoFim.Value.Date.AddDays(1));
-        }
-        var visualizacoesRegistrosDb = await _visualizacaoRegistroRepository.SelectByLinqExpModelAsync(linqExpFiltro);
+        // if (pesquisa.DataOperacaoInicio.HasValue)
+        // {
+        //     linqExpFiltro.AppendAndAlso(x => BsnDateTimeModel.FromDb(x.HoraVisualizacao, timeZone).Value >= pesquisa.DataOperacaoInicio.Value.Date);
+        // }
+        // if (pesquisa.DataOperacaoFim.HasValue)
+        // {
+        //     linqExpFiltro.AppendAndAlso(x => BsnDateTimeModel.FromDb(x.HoraVisualizacao, timeZone).Value < pesquisa.DataOperacaoFim.Value.Date.AddDays(1));
+        // }
+        var visualizacoesRegistrosDb = (await _visualizacaoRegistroRepository.SelectByLinqExpModelAsync(linqExpFiltro))
+            .Where(x => pesquisa.Periodo.DateEValido(BsnDateTimeModel.FromDb(x.HoraVisualizacao, timeZone).Value));
         var idsRegistros = visualizacoesRegistrosDb.Select(x => x.IdRegistroVisualizado).Distinct();
         var linqExpDadosDosRegistros = new LinqExpModel<DadoDbModel>(x => idsRegistros.Contains(x.IdRegistroGenerico) && x.IdTipoRegistro == BsnTipoRegistroLiterais.Inclusao.Id);
         var dadosDosRegistrosDb = await _dadoRepository.SelectByLinqExpModelAsync(linqExpDadosDosRegistros);
@@ -346,7 +350,7 @@ public class LogsBusiness : ILogsBusiness
 
     private async Task<BsnResult<List<BsnRelacaoDeLog>>> PesquisarOpExclusaoAsync(BsnPesquisaDeLogs pesquisa, TimeZoneInfo timeZone)
     {
-        var linqExpFiltro = new LinqExpModel<RegistroDbModel>(x => !x.EstaEsperandoAprovacaoExclusao && x.FoiExcluido);
+        var linqExpFiltro = new LinqExpModel<RegistroDbModel>(x => x.FoiExcluido);
         var filtroColaboradores = new BsnPesquisaDeColaborador { Nome = pesquisa.NomeColaborador, EstaAtivo = true };
         var resColaboradoresRelac = await _colaboradorBusiness.PesquisarAsync(filtroColaboradores);
         if (!resColaboradoresRelac.EstaOk)
@@ -382,15 +386,16 @@ public class LogsBusiness : ILogsBusiness
             }
             linqExpFiltro.AppendAndAlso(x => idsRegistrosComId.Contains(x.Id));
         }
-        if (pesquisa.DataOperacaoInicio.HasValue)
-        {
-            linqExpFiltro.AppendAndAlso(x => x.HoraExclusao.HasValue && BsnDateTimeModel.FromDb(x.HoraExclusao.Value, timeZone).Value >= pesquisa.DataOperacaoInicio.Value.Date);
-        }
-        if (pesquisa.DataOperacaoFim.HasValue)
-        {
-            linqExpFiltro.AppendAndAlso(x => x.HoraExclusao.HasValue && BsnDateTimeModel.FromDb(x.HoraExclusao.Value, timeZone).Value < pesquisa.DataOperacaoFim.Value.Date.AddDays(1));
-        }
-        var registrosDb = await _registroRepository.SelectByLinqExpModelAsync(linqExpFiltro);
+        // if (pesquisa.DataOperacaoInicio.HasValue)
+        // {
+        //     linqExpFiltro.AppendAndAlso(x => x.HoraExclusao.HasValue && BsnDateTimeModel.FromDb(x.HoraExclusao.Value, timeZone).Value >= pesquisa.DataOperacaoInicio.Value.Date);
+        // }
+        // if (pesquisa.DataOperacaoFim.HasValue)
+        // {
+        //     linqExpFiltro.AppendAndAlso(x => x.HoraExclusao.HasValue && BsnDateTimeModel.FromDb(x.HoraExclusao.Value, timeZone).Value < pesquisa.DataOperacaoFim.Value.Date.AddDays(1));
+        // }
+        var registrosDb = (await _registroRepository.SelectByLinqExpModelAsync(linqExpFiltro))
+            .Where(x => x.HoraExclusao.HasValue && pesquisa.Periodo.DateEValido(BsnDateTimeModel.FromDb(x.HoraExclusao.Value, timeZone).Value));
         var idsRegistros = registrosDb.Select(x => x.Id);
         var linqExpDadosDosRegistros = new LinqExpModel<DadoDbModel>(x => idsRegistros.Contains(x.IdRegistroGenerico) && x.IdTipoRegistro == BsnTipoRegistroLiterais.Inclusao.Id);
         var dadosDosRegistrosDb = await _dadoRepository.SelectByLinqExpModelAsync(linqExpDadosDosRegistros);
@@ -429,7 +434,7 @@ public class LogsBusiness : ILogsBusiness
         var idsColunasSaoId = BsnColunaLiterais.ObterColunasSaoId();
         if (idOperacao == BsnOperacaoLiterais.Inclusao.Id)
         {
-            var linqExpFiltro = new LinqExpModel<RegistroDbModel>(x => !x.EstaEsperandoAprovacaoInclusao && x.Id == idRegistro);
+            var linqExpFiltro = new LinqExpModel<RegistroDbModel>(x => x.Id == idRegistro);
             var registrosDb = await _registroRepository.SelectByLinqExpModelAsync(linqExpFiltro);
             if (registrosDb == null || !registrosDb.Any())
             {
@@ -468,7 +473,7 @@ public class LogsBusiness : ILogsBusiness
         }
         if (idOperacao == BsnOperacaoLiterais.Alteracao.Id)
         {
-            var linqExpFiltro = new LinqExpModel<AlteracaoRegistroDbModel>(x => !x.EstaEsperandoAprovacao && x.Id == idRegistro);
+            var linqExpFiltro = new LinqExpModel<AlteracaoRegistroDbModel>(x => x.Id == idRegistro);
             var alteracoesRegistrosDb = await _alteracaoRegistroRepository.SelectByLinqExpModelAsync(linqExpFiltro);
             if (alteracoesRegistrosDb == null || !alteracoesRegistrosDb.Any())
             {
@@ -556,7 +561,7 @@ public class LogsBusiness : ILogsBusiness
         }
         if (idOperacao == BsnOperacaoLiterais.Exclusao.Id)
         {
-            var linqExpFiltro = new LinqExpModel<RegistroDbModel>(x => !x.EstaEsperandoAprovacaoExclusao && x.FoiExcluido && x.Id == idRegistro);
+            var linqExpFiltro = new LinqExpModel<RegistroDbModel>(x => x.FoiExcluido && x.Id == idRegistro);
             var registrosDb = await _registroRepository.SelectByLinqExpModelAsync(linqExpFiltro);
             if (registrosDb == null || !registrosDb.Any())
             {

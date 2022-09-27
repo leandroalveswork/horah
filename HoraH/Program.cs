@@ -11,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.InjetarConfiguration(builder.Configuration);
+builder.Services.InjetarProxy();
 builder.Services.InjetarAccessor();
 builder.Services.InjetarUnitOfWork();
 builder.Services.InjetarRepository();

@@ -13,7 +13,8 @@ public interface IAppConfiguration
     string NomeColecAlteracaoRegistro { get; }
     string NomeColecVisualizacaoRegistro { get; }
     string NomeColecSolicitacao { get; }
-    string NomeColecItemSolicitacao { get; }
+    string NomeColecAcessoVirtual { get; }
+    string NomeColecPresencaVirtual { get; }
     string LocalStoreKeyDoIdColaboradorLogado { get; }
     string HashPass { get; }
     SetgColaboradorAdmin ColaboradorAdmin { get; }

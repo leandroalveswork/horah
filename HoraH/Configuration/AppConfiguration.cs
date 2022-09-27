@@ -23,7 +23,8 @@ public class AppConfiguration : IAppConfiguration
     public string NomeColecAlteracaoRegistro => "AlteracaoRegistro";
     public string NomeColecVisualizacaoRegistro => "VisualizacaoRegistro";
     public string NomeColecSolicitacao => "Solicitacao";
-    public string NomeColecItemSolicitacao => "ItemSolicitacao";
+    public string NomeColecAcessoVirtual => "AcessoVirtual";
+    public string NomeColecPresencaVirtual => "PresencaVirtual";
     public string LocalStoreKeyDoIdColaboradorLogado => "IdColaboradorLogado";
     public string HashPass => _configuration["HashPass"];
     public SetgColaboradorAdmin ColaboradorAdmin => _setgColaboradorAdmin;

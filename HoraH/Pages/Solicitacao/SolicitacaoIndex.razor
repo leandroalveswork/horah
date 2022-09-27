@@ -1,4 +1,4 @@
-@page "/logs"
+@page "/solicitacao"
 
 @using Domain.Design.Patterns.Strategy
 @using Domain.Models
@@ -6,65 +6,33 @@
 @using Domain.Models.Bsn.Logs
 @using Domain.Models.Bsn.Mes
 @using Domain.Models.Bsn.Periodo
+@using Domain.Models.Bsn.Solicitacao
 @using Domain.Models.ViewModels
 @using Domain.Interfaces.Business
 
-@inject ILogsBusiness LogsBusiness
+@inject ISolicitacaoBusiness SolicitacaoBusiness
 @inject NavigationManager UriHelper
 
-<PageTitle>Logs</PageTitle>
+<PageTitle>Solicitação</PageTitle>
 
 <div class='d-flex flex-column'>
     <h1>Filtros</h1>
     <div class='row g-0 w-100 d-flex'>
         <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
-            <label>Nome Colaborador</label>
-            <input type='text' @bind="nomeColaborador" />
+            <label>Nome Solicitador</label>
+            <input type='text' @bind="nomeSolicitador" />
         </div>
         <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
-            <label>Operação</label>
-            <select @bind="idOperacao">
+            <label>Tipo Solicitação</label>
+            <select @bind="idTipoSolicitacao">
                 <option value="">Selecione...</option>
-                @foreach (var iLtOp in BsnOperacaoLiterais.ListarTodos())
+                @foreach (var iLtTipoSolic in BsnTipoSolicitacaoLiterais.ListarTodos())
                 {
-                    <option value=@(iLtOp.Id)>@iLtOp.Nome</option>
+                    <option value=@(iLtTipoSolic.Id)>@iLtTipoSolic.Nome</option>
                 }
             </select>
         </div>
-        <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
-            <label>Tabela</label>
-            <select @bind="idTabela">
-                <option value="">Selecione...</option>
-                @foreach (var iLtTabela in BsnTabelaLiterais.ListarTodos())
-                {
-                    <option value=@(iLtTabela.Id)>@iLtTabela.Nome</option>
-                }
-            </select>
-        </div>
-        <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
-            <label>Id Entidade</label>
-            <input type='text' @bind="idEntidade" />
-        </div>
     </div>
-    @* <div class='row g-0 w-100 d-flex'>
-        <div class='d-flex flex-row align-items-center col-sm-6 col-md-4 px-2 pt-3'>
-            <HrhCheckbox @bind-EChecado=@ePesquisaPorIntervalo EDesabilitado=@false />
-            <label class='ps-2'>É pesquisa por Intervalo?</label>
-        </div>
-    </div>
-    <div class='row g-0 w-100 d-flex'>
-        <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
-            <label>@(ePesquisaPorIntervalo ? "Data Início" : "Data")</label>
-            <input type='date' @bind="dataInicio" />
-        </div>
-        @if (ePesquisaPorIntervalo)
-        {
-            <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
-                <label>Data Fim</label>
-                <input type='date' @bind="dataFim" />
-            </div>
-        }
-    </div> *@
     <div class='row g-0 w-100 d-flex'>
         <div class='d-flex flex-column col-sm-6 col-md-4 px-2 pt-3'>
             <label>[Autopreencher Período]:</label>
@@ -149,6 +117,25 @@
             </div>
         </div>
     }
+    <div class='row g-0 d-flex'>
+        <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
+            <label>Status Solicitação</label>
+            <select @bind="idStatusSolicitacao">
+                <option value="">Selecione...</option>
+                @foreach (var iLtStatusSolic in BsnStatusSolicitacaoLiterais.ListarTodos())
+                {
+                    <option value=@(iLtStatusSolic.Id)>@iLtStatusSolic.Nome</option>
+                }
+            </select>
+        </div>
+        @if (temAprovadorOuReprovadorNaPesquisa)
+        {
+            <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
+                <label>Nome Aprovador/Reprovador</label>
+                <input type='text' @bind="nomeAprovadorReprovador" />
+            </div>
+        }
+    </div>
     <div class='row g-0 w-100 d-flex'>
         <div class='d-flex flex-column col-12 px-2 pt-3'>
             <button class='p-2 border-non-important border-2 border-hrh-1 hrh-bg-inherit-non-important h-100 text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-fundo-non-important' @onclick="SubmitPesquisarAsync" >
@@ -156,36 +143,35 @@
             </button>
         </div>
     </div>
-    <h1 class='pt-3'>Logs</h1>
+    <h1 class='pt-3'>Solicitações</h1>
     <div class='w-100 mt-3 text-hrh-fundo'>
         @if (relacoes.Any())
         {
             <RadzenDataGrid AllowColumnResize="true" AllowSorting="true" PageSize="10" AllowPaging="true"
-                Data="@relacoes" TItem="BsnRelacaoDeLog">
+                Data="@relacoes" TItem="BsnRelacaoDeSolicitacao">
                 <Columns>
-                    <RadzenDataGridColumn TItem="BsnRelacaoDeLog" Property="NomeColaborador" Title="Colaborador" Frozen="true" Width="200px" />
-                    <RadzenDataGridColumn TItem="BsnRelacaoDeLog" Title="Operação" Width="200px" >
+                    <RadzenDataGridColumn TItem="BsnRelacaoDeSolicitacao" Property="NomeSolicitador" Title="Solicitador" Frozen="true" Width="200px" />
+                    <RadzenDataGridColumn TItem="BsnRelacaoDeSolicitacao" Title="Tipo Solicitação" Width="200px" >
                         <Template Context="data">
-                            <span>@(BsnOperacaoLiterais.GetById(data.IdOperacao).Nome)</span>
+                            <span>@(BsnTipoSolicitacaoLiterais.GetById(data.IdTipoSolicitacao).Nome)</span>
                         </Template>
                     </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="BsnRelacaoDeLog" Title="Tabela" Width="200px" >
+                    <RadzenDataGridColumn TItem="BsnRelacaoDeSolicitacao" Title="Hora" Width="200px" >
                         <Template Context="data">
-                            <span>@(BsnTabelaLiterais.GetById(data.IdTabela).Nome)</span>
+                            <span>@(data.HoraSolicitacao.ToString("HH:mm:ss - dd/MM/yyyy"))</span>
                         </Template>
                     </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="BsnRelacaoDeLog" Property="IdEntidade" Title="Id Entidade" Frozen="true" Width="200px" />
-                    <RadzenDataGridColumn TItem="BsnRelacaoDeLog" Property="DiaView" Title="Dia" Width="100px" />
-                    <RadzenDataGridColumn TItem="BsnRelacaoDeLog" Title="Dados" Width="100px">
+                    <RadzenDataGridColumn TItem="BsnRelacaoDeSolicitacao" Title="Status" Width="100px" >
                         <Template Context="data">
-                            <button class='p-2 me-2 border-non-important border-2 border-hrh-1 hrh-bg-inherit-non-important text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-texto-non-important' @onclick=@(() => HandleNavegarParaDetalhesLogs(data.Id, data.IdOperacao)) >
+                            <span>@(BsnStatusSolicitacaoLiterais.GetById(data.IdStatusSolicitacao).Nome)</span>
+                        </Template>
+                    </RadzenDataGridColumn>
+                    <RadzenDataGridColumn TItem="BsnRelacaoDeSolicitacao" Property="NomeAprovadorReprovador" Title="Solicitador" Width="200px" />
+                    <RadzenDataGridColumn TItem="BsnRelacaoDeSolicitacao" Title="Dados" Width="100px">
+                        <Template Context="data">
+                            <button class='p-2 me-2 border-non-important border-2 border-hrh-1 hrh-bg-inherit-non-important text-hrh-1-non-important onhover-bg-hrh-1-non-important onhover-text-hrh-texto-non-important' @onclick=@(() => HandleNavegarParaDetalhesSolicitacao(data.Id)) >
                                 <span class='oi oi-eye px-1'></span>
                             </button>
-                        </Template>
-                    </RadzenDataGridColumn>
-                    <RadzenDataGridColumn TItem="BsnRelacaoDeLog" Title="Hora" Width="200px" >
-                        <Template Context="data">
-                            <span>@(data.HoraOperacao.ToString("HH:mm:ss - dd/MM/yyyy"))</span>
                         </Template>
                     </RadzenDataGridColumn>
                 </Columns>
@@ -214,10 +200,8 @@
     public EventCallback<string> UnlockUI { get; set; }
     [CascadingParameter(Name = "VoltarAsync")]
     public EventCallback VoltarAsync { get; set; }
-    private string? nomeColaborador;
-    private string? idOperacao;
-    private string? idTabela;
-    private string? idEntidade;
+    private string? nomeSolicitador;
+    private string? idTipoSolicitacao;
     
     private bool ePesquisaPorData;
     private bool ePesquisaPorIntervalo;
@@ -230,9 +214,23 @@
     private string? idAnoFim;
     
     private List<int> listaAnos = HrhListaSuporteStrategy.ListarEsteEUltimos20Anos();
+    private string? idStatusSolicitacao;
+    private string? nomeAprovadorReprovador;
+    private bool temAprovadorOuReprovadorNaPesquisa
+    {
+        get
+        {
+            var ltStatusSolic = BsnStatusSolicitacaoLiterais.GetByIdOrDefault(idStatusSolicitacao ?? "");
+            if (ltStatusSolic is null)
+            {
+                return false;
+            }
+            return (ltStatusSolic.Id == BsnStatusSolicitacaoLiterais.Aprovada.Id || ltStatusSolic.Id == BsnStatusSolicitacaoLiterais.Reprovada.Id);
+        }
+    }
 
     private string idPesquisar = MongoId.NewMongoId;
-    private List<BsnRelacaoDeLog> relacoes = new List<BsnRelacaoDeLog>();
+    private List<BsnRelacaoDeSolicitacao> relacoes = new List<BsnRelacaoDeSolicitacao>();
 
 
     private bool deveCarregarDados = false;
@@ -244,11 +242,8 @@
     {
         if (deveCarregarDados)
         {
-            nomeColaborador = "";
-            idOperacao = "";
-            idTabela = "";
-            idEntidade = "";
-            ePesquisaPorIntervalo = false;
+            nomeSolicitador = "";
+            idTipoSolicitacao = "";
             ePesquisaPorData = false;
             ePesquisaPorIntervalo = false;
             dataInicio = null;
@@ -258,15 +253,17 @@
             idMesFim = "";
             idAnoInicio = "";
             idAnoFim = "";
-            await CarregarRelacoesAsync(BsnPesquisaDeLogs.SemFiltro);
+            idStatusSolicitacao = "";
+            nomeAprovadorReprovador = "";
+            await CarregarRelacoesAsync(BsnPesquisaDeSolicitacao.SemFiltros);
             deveCarregarDados = false;
             StateHasChanged();
         }
     }
     
-    public async Task CarregarRelacoesAsync(BsnPesquisaDeLogs pesquisa)
+    public async Task CarregarRelacoesAsync(BsnPesquisaDeSolicitacao pesquisa)
     {
-        var resultRelacoes = await LogsBusiness.PesquisarAsync(pesquisa, TimeZoneInfo.Local);
+        var resultRelacoes = await SolicitacaoBusiness.PesquisarAsync(pesquisa, TimeZoneInfo.Local);
         if (resultRelacoes.EstaOk)
         {
             relacoes = resultRelacoes.Resultado;
@@ -330,12 +327,12 @@
     {
         await LockUI.InvokeAsync(idPesquisar);
         await Task.Yield();
-        var pesquisaSubmit = new BsnPesquisaDeLogs
+        var pesquisaSubmit = new BsnPesquisaDeSolicitacao
         {
-            NomeColaborador = nomeColaborador,
-            IdOperacao = idOperacao,
-            IdTabela = idTabela,
-            IdEntidade = idEntidade
+            NomeSolicitador = nomeSolicitador,
+            IdTipoSolicitacao = idTipoSolicitacao,
+            IdStatusSolicitacao = idStatusSolicitacao,
+            NomeAprovadorReprovador = nomeAprovadorReprovador
         };
         if (ePesquisaPorData)
         {
@@ -366,13 +363,12 @@
             }
             pesquisaSubmit.Periodo = periodoEspecificoMes;
         }
-        
         await CarregarRelacoesAsync(pesquisaSubmit);
         await UnlockUI.InvokeAsync(idPesquisar);
     }
     
-    public void HandleNavegarParaDetalhesLogs(string idOperacao, string idRegistro)
+    public void HandleNavegarParaDetalhesSolicitacao(string id)
     {
-        UriHelper.NavigateTo($"/logs/detalhes?idOperacao=" + idOperacao + "&idRegistro=" + idRegistro, true);
+        UriHelper.NavigateTo($"/solicitacao/detalhes?id=" + id, true);
     }
 }

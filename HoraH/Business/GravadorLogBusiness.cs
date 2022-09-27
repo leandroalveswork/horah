@@ -1,6 +1,7 @@
 using System.Text.Json;
 using HoraH.Domain.Interfaces.Accessor;
 using HoraH.Domain.Interfaces.Business;
+using HoraH.Domain.Interfaces.Proxy;
 using HoraH.Domain.Interfaces.Repository;
 using HoraH.Domain.Interfaces.UnitOfWork;
 using HoraH.Domain.Models;
@@ -11,19 +12,22 @@ using HoraH.Domain.Models.LinqExp;
 namespace HoraH.Business;
 public class GravadorLogBusiness : IGravadorLogBusiness
 {
+    private readonly IColunaLiteralProxy _colunaLiteralProxy;
     private readonly IRegistroRepository _registroRepository;
     private readonly IAlteracaoRegistroRepository _alteracaoRegistroRepository;
     private readonly IVisualizacaoRegistroRepository _visualizacaoRegistroRepository;
     private readonly IDadoRepository _dadoRepository;
     private readonly IUnitOfWork _uow;
     private readonly IDbSessionAccessor _dbSessionAccessor;
-    public GravadorLogBusiness(IRegistroRepository registroRepository,
+    public GravadorLogBusiness(IColunaLiteralProxy colunaLiteralProxy,
+                               IRegistroRepository registroRepository,
                                IAlteracaoRegistroRepository alteracaoRegistroRepository,
                                IVisualizacaoRegistroRepository visualizacaoRegistroRepository,
                                IDadoRepository dadoRepository,
                                IUnitOfWork uow,
                                IDbSessionAccessor dbSessionAccessor)
     {
+        _colunaLiteralProxy = colunaLiteralProxy;
         _registroRepository = registroRepository;
         _alteracaoRegistroRepository = alteracaoRegistroRepository;
         _visualizacaoRegistroRepository = visualizacaoRegistroRepository;
@@ -58,26 +62,24 @@ public class GravadorLogBusiness : IGravadorLogBusiness
             await _uow.StartTransactionAsync();
             try
             {
-                var hrInclusao = DateTime.Now;
-                var registroInserido = new RegistroDbModel
+                var hrInclusaoInUow = DateTime.Now;
+                var registroInseridoInUow = new RegistroDbModel
                 {
                     Id = MongoId.NewMongoId,
                     IdColaboradorInclusao = idColaboradorInclusao,
-                    HoraInclusao = hrInclusao,
-                    EstaEsperandoAprovacaoInclusao = false,
+                    HoraInclusao = hrInclusaoInUow,
                     FoiExcluido = false,
-                    EstaEsperandoAprovacaoExclusao = false
                 };
-                var dadosInclusao = ExtrairDados(entidade);
-                foreach (var iDadoInclusao in dadosInclusao)
+                var dadosInclusaoInUow = ExtrairDados(entidade);
+                foreach (var iDadoInclusaoInUow in dadosInclusaoInUow)
                 {
-                    iDadoInclusao.IdTipoRegistro = BsnTipoRegistroLiterais.Inclusao.Id;
-                    iDadoInclusao.IdRegistroGenerico = registroInserido.Id;
+                    iDadoInclusaoInUow.IdTipoRegistro = BsnTipoRegistroLiterais.Inclusao.Id;
+                    iDadoInclusaoInUow.IdRegistroGenerico = registroInseridoInUow.Id;
                 }
-                await _registroRepository.InsertAsync(registroInserido);
-                await _dadoRepository.InsertManyAsync(dadosInclusao);
+                await _registroRepository.InsertAsync(registroInseridoInUow);
+                await _dadoRepository.InsertManyAsync(dadosInclusaoInUow);
                 await _uow.CommitTransactionAsync();
-                return registroInserido.Id;
+                return registroInseridoInUow.Id;
             }
             catch (Exception)
             {
@@ -93,9 +95,7 @@ public class GravadorLogBusiness : IGravadorLogBusiness
                 Id = MongoId.NewMongoId,
                 IdColaboradorInclusao = idColaboradorInclusao,
                 HoraInclusao = hrInclusao,
-                EstaEsperandoAprovacaoInclusao = false,
                 FoiExcluido = false,
-                EstaEsperandoAprovacaoExclusao = false
             };
             var dadosInclusao = ExtrairDados(entidade);
             foreach (var iDadoInclusao in dadosInclusao)
@@ -118,32 +118,31 @@ public class GravadorLogBusiness : IGravadorLogBusiness
             await _uow.StartTransactionAsync();
             try
             {
-                var hrAlteracao = DateTime.Now;
-                var dadosEntidade = ExtrairDados(entidadeAposSalvar);
-                var colunaEId = BsnColunaLiterais.ObterColunaEspecificaPorNome(nomeColecao, "Id", typeof(TDbModel));
-                var entidadeIdSerializadoJson = dadosEntidade.First(x => x.IdColuna == colunaEId.Id).ValorSerializadoJson;
-                var linqExpDadoInclusaoId = new LinqExpModel<DadoDbModel>(x => x.ValorSerializadoJson == entidadeIdSerializadoJson
-                    && x.IdColuna == colunaEId.Id
+                var hrAlteracaoInUow = DateTime.Now;
+                var dadosEntidadeInUow = ExtrairDados(entidadeAposSalvar);
+                var colunaEIdInUow = BsnColunaLiterais.ObterColunaEspecificaPorNome(nomeColecao, "Id", typeof(TDbModel));
+                var entidadeIdSerializadoJsonInUow = dadosEntidadeInUow.First(x => x.IdColuna == colunaEIdInUow.Id).ValorSerializadoJson;
+                var linqExpDadoInclusaoIdInUow = new LinqExpModel<DadoDbModel>(x => x.ValorSerializadoJson == entidadeIdSerializadoJsonInUow
+                    && x.IdColuna == colunaEIdInUow.Id
                     && x.IdTipoRegistro == BsnTipoRegistroLiterais.Inclusao.Id);
-                var dadoInclusaoId = (await _dadoRepository.SelectByLinqExpModelAsync(linqExpDadoInclusaoId)).First();
-                var alteracaoRegistroInserido = new AlteracaoRegistroDbModel
+                var dadoInclusaoIdInUow = (await _dadoRepository.SelectByLinqExpModelAsync(linqExpDadoInclusaoIdInUow)).First();
+                var alteracaoRegistroInseridoInUow = new AlteracaoRegistroDbModel
                 {
                     Id = MongoId.NewMongoId,
                     IdColaboradorAlteracao = idColaboradorAlteracao,
-                    IdRegistroAlterado = dadoInclusaoId.IdRegistroGenerico,
-                    HoraAlteracao = hrAlteracao,
-                    EstaEsperandoAprovacao = false
+                    IdRegistroAlterado = dadoInclusaoIdInUow.IdRegistroGenerico,
+                    HoraAlteracao = hrAlteracaoInUow,
                 };
-                var dadosEntidadeFiltrado = dadosEntidade.Where(x => idsColunasAlteracao.Contains(x.IdColuna));
-                foreach (var iDadoEntidade in dadosEntidadeFiltrado)
+                var dadosEntidadeFiltradoInUow = dadosEntidadeInUow.Where(x => idsColunasAlteracao.Contains(x.IdColuna));
+                foreach (var iDadoEntidadeInUow in dadosEntidadeFiltradoInUow)
                 {
-                    iDadoEntidade.IdTipoRegistro = BsnTipoRegistroLiterais.Alteracao.Id;
-                    iDadoEntidade.IdRegistroGenerico = alteracaoRegistroInserido.Id;
+                    iDadoEntidadeInUow.IdTipoRegistro = BsnTipoRegistroLiterais.Alteracao.Id;
+                    iDadoEntidadeInUow.IdRegistroGenerico = alteracaoRegistroInseridoInUow.Id;
                 }
-                await _alteracaoRegistroRepository.InsertAsync(alteracaoRegistroInserido);
-                await _dadoRepository.InsertManyAsync(dadosEntidadeFiltrado);
+                await _alteracaoRegistroRepository.InsertAsync(alteracaoRegistroInseridoInUow);
+                await _dadoRepository.InsertManyAsync(dadosEntidadeFiltradoInUow);
                 await _uow.CommitTransactionAsync();
-                return alteracaoRegistroInserido.Id;
+                return alteracaoRegistroInseridoInUow.Id;
             }
             catch (Exception)
             {
@@ -167,7 +166,6 @@ public class GravadorLogBusiness : IGravadorLogBusiness
                 IdColaboradorAlteracao = idColaboradorAlteracao,
                 IdRegistroAlterado = dadoInclusaoId.IdRegistroGenerico,
                 HoraAlteracao = hrAlteracao,
-                EstaEsperandoAprovacao = false
             };
             var dadosEntidadeFiltrado = dadosEntidade.Where(x => idsColunasAlteracao.Contains(x.IdColuna));
             foreach (var iDadoEntidade in dadosEntidadeFiltrado)
@@ -190,34 +188,33 @@ public class GravadorLogBusiness : IGravadorLogBusiness
             await _uow.StartTransactionAsync();
             try
             {
-                var hrAlteracao = DateTime.Now;
-                var dadosEntidade = ExtrairDados(entidadeAposSalvar);
-                var colunaEId = BsnColunaLiterais.ObterColunaEspecificaPorNome(nomeColecao, "Id", typeof(TDbModel));
-                var entidadeIdSerializadoJson = dadosEntidade.First(x => x.IdColuna == colunaEId.Id).ValorSerializadoJson;
-                var linqExpDadoInclusaoId = new LinqExpModel<DadoDbModel>(x => x.ValorSerializadoJson == entidadeIdSerializadoJson
-                    && x.IdColuna == colunaEId.Id
+                var hrAlteracaoInUow = DateTime.Now;
+                var dadosEntidadeInUow = ExtrairDados(entidadeAposSalvar);
+                var colunaEIdInUow = BsnColunaLiterais.ObterColunaEspecificaPorNome(nomeColecao, "Id", typeof(TDbModel));
+                var entidadeIdSerializadoJsonInUow = dadosEntidadeInUow.First(x => x.IdColuna == colunaEIdInUow.Id).ValorSerializadoJson;
+                var linqExpDadoInclusaoIdInUow = new LinqExpModel<DadoDbModel>(x => x.ValorSerializadoJson == entidadeIdSerializadoJsonInUow
+                    && x.IdColuna == colunaEIdInUow.Id
                     && x.IdTipoRegistro == BsnTipoRegistroLiterais.Inclusao.Id);
-                var dadoInclusaoId = (await _dadoRepository.SelectByLinqExpModelAsync(linqExpDadoInclusaoId)).First();
-                var alteracaoRegistroInserido = new AlteracaoRegistroDbModel
+                var dadoInclusaoIdInUow = (await _dadoRepository.SelectByLinqExpModelAsync(linqExpDadoInclusaoIdInUow)).First();
+                var alteracaoRegistroInseridoInUow = new AlteracaoRegistroDbModel
                 {
                     Id = MongoId.NewMongoId,
                     IdColaboradorAlteracao = idColaboradorAlteracao,
-                    IdRegistroAlterado = dadoInclusaoId.IdRegistroGenerico,
-                    HoraAlteracao = hrAlteracao,
-                    EstaEsperandoAprovacao = false
+                    IdRegistroAlterado = dadoInclusaoIdInUow.IdRegistroGenerico,
+                    HoraAlteracao = hrAlteracaoInUow,
                 };
-                var dadosEntidadeAntesComparacao = ExtrairDados(entidadeAntesSalvar);
-                var idsColunasAlteracao = dadosEntidade.Where(x => dadosEntidadeAntesComparacao.Any(y => y.IdColuna == x.IdColuna && y.ValorSerializadoJson == x.ValorSerializadoJson)).Select(x => x.IdColuna).ToList();
-                var dadosEntidadeFiltrado = dadosEntidade.Where(x => idsColunasAlteracao.Contains(x.IdColuna));
-                foreach (var iDadoEntidade in dadosEntidadeFiltrado)
+                var dadosEntidadeAntesComparacaoInUow = ExtrairDados(entidadeAntesSalvar);
+                var idsColunasAlteracaoInUow = dadosEntidadeInUow.Where(x => dadosEntidadeAntesComparacaoInUow.Any(y => y.IdColuna == x.IdColuna && y.ValorSerializadoJson == x.ValorSerializadoJson)).Select(x => x.IdColuna).ToList();
+                var dadosEntidadeFiltradoInUow = dadosEntidadeInUow.Where(x => idsColunasAlteracaoInUow.Contains(x.IdColuna));
+                foreach (var iDadoEntidadeInUow in dadosEntidadeFiltradoInUow)
                 {
-                    iDadoEntidade.IdTipoRegistro = BsnTipoRegistroLiterais.Alteracao.Id;
-                    iDadoEntidade.IdRegistroGenerico = alteracaoRegistroInserido.Id;
+                    iDadoEntidadeInUow.IdTipoRegistro = BsnTipoRegistroLiterais.Alteracao.Id;
+                    iDadoEntidadeInUow.IdRegistroGenerico = alteracaoRegistroInseridoInUow.Id;
                 }
-                await _alteracaoRegistroRepository.InsertAsync(alteracaoRegistroInserido);
-                await _dadoRepository.InsertManyAsync(dadosEntidadeFiltrado);
+                await _alteracaoRegistroRepository.InsertAsync(alteracaoRegistroInseridoInUow);
+                await _dadoRepository.InsertManyAsync(dadosEntidadeFiltradoInUow);
                 await _uow.CommitTransactionAsync();
-                return alteracaoRegistroInserido.Id;
+                return alteracaoRegistroInseridoInUow.Id;
             }
             catch (Exception)
             {
@@ -241,7 +238,6 @@ public class GravadorLogBusiness : IGravadorLogBusiness
                 IdColaboradorAlteracao = idColaboradorAlteracao,
                 IdRegistroAlterado = dadoInclusaoId.IdRegistroGenerico,
                 HoraAlteracao = hrAlteracao,
-                EstaEsperandoAprovacao = false
             };
             var dadosEntidadeAntesComparacao = ExtrairDados(entidadeAntesSalvar);
             var idsColunasAlteracao = dadosEntidade.Where(x => dadosEntidadeAntesComparacao.Any(y => y.IdColuna == x.IdColuna && y.ValorSerializadoJson == x.ValorSerializadoJson)).Select(x => x.IdColuna).ToList();
@@ -266,31 +262,31 @@ public class GravadorLogBusiness : IGravadorLogBusiness
             await _uow.StartTransactionAsync();
             try
             {
-                var hrVisualizacao = DateTime.Now;
-                var dadosEntidade = ExtrairDados(entidadeVisualizada);
-                var colunaEId = BsnColunaLiterais.ObterColunaEspecificaPorNome(nomeColecao, "Id", typeof(TDbModel));
-                var entidadeIdSerializadoJson = dadosEntidade.First(x => x.IdColuna == colunaEId.Id).ValorSerializadoJson;
-                var linqExpDadoInclusaoId = new LinqExpModel<DadoDbModel>(x => x.ValorSerializadoJson == entidadeIdSerializadoJson
-                    && x.IdColuna == colunaEId.Id
+                var hrVisualizacaoInUow = DateTime.Now;
+                var dadosEntidadeInUow = ExtrairDados(entidadeVisualizada);
+                var colunaEIdInUow = BsnColunaLiterais.ObterColunaEspecificaPorNome(nomeColecao, "Id", typeof(TDbModel));
+                var entidadeIdSerializadoJsonInUow = dadosEntidadeInUow.First(x => x.IdColuna == colunaEIdInUow.Id).ValorSerializadoJson;
+                var linqExpDadoInclusaoIdInUow = new LinqExpModel<DadoDbModel>(x => x.ValorSerializadoJson == entidadeIdSerializadoJsonInUow
+                    && x.IdColuna == colunaEIdInUow.Id
                     && x.IdTipoRegistro == BsnTipoRegistroLiterais.Inclusao.Id);
-                var dadoInclusaoId = (await _dadoRepository.SelectByLinqExpModelAsync(linqExpDadoInclusaoId)).First();
-                var visualizacaoRegistroInserido = new VisualizacaoRegistroDbModel
+                var dadoInclusaoIdInUow = (await _dadoRepository.SelectByLinqExpModelAsync(linqExpDadoInclusaoIdInUow)).First();
+                var visualizacaoRegistroInseridoInUow = new VisualizacaoRegistroDbModel
                 {
                     Id = MongoId.NewMongoId,
                     IdColaboradorVisualizacao = idColaboradorVisualizacao,
-                    IdRegistroVisualizado = dadoInclusaoId.IdRegistroGenerico,
-                    HoraVisualizacao = hrVisualizacao,
+                    IdRegistroVisualizado = dadoInclusaoIdInUow.IdRegistroGenerico,
+                    HoraVisualizacao = hrVisualizacaoInUow,
                 };
-                var dadosEntidadeFiltrado = dadosEntidade.Where(x => idsColunasVisualizacao.Contains(x.IdColuna));
-                foreach (var iDadoEntidade in dadosEntidadeFiltrado)
+                var dadosEntidadeFiltradoInUow = dadosEntidadeInUow.Where(x => idsColunasVisualizacao.Contains(x.IdColuna));
+                foreach (var iDadoEntidadeInUow in dadosEntidadeFiltradoInUow)
                 {
-                    iDadoEntidade.IdTipoRegistro = BsnTipoRegistroLiterais.Visualizacao.Id;
-                    iDadoEntidade.IdRegistroGenerico = visualizacaoRegistroInserido.Id;
+                    iDadoEntidadeInUow.IdTipoRegistro = BsnTipoRegistroLiterais.Visualizacao.Id;
+                    iDadoEntidadeInUow.IdRegistroGenerico = visualizacaoRegistroInseridoInUow.Id;
                 }
-                await _visualizacaoRegistroRepository.InsertAsync(visualizacaoRegistroInserido);
-                await _dadoRepository.InsertManyAsync(dadosEntidadeFiltrado);
+                await _visualizacaoRegistroRepository.InsertAsync(visualizacaoRegistroInseridoInUow);
+                await _dadoRepository.InsertManyAsync(dadosEntidadeFiltradoInUow);
                 await _uow.CommitTransactionAsync();
-                return visualizacaoRegistroInserido.Id;
+                return visualizacaoRegistroInseridoInUow.Id;
             }
             catch (Exception)
             {
@@ -336,48 +332,48 @@ public class GravadorLogBusiness : IGravadorLogBusiness
             await _uow.StartTransactionAsync();
             try
             {
-                var hrVisualizacao = DateTime.Now;
-                var visualizacoesGravadas = new List<BsnVisualizacaoGravada>();
-                foreach (var iEntidadeVis in entidadesVisualizadas)
+                var hrVisualizacaoInUow = DateTime.Now;
+                var visualizacoesGravadasInUow = new List<BsnVisualizacaoGravada>();
+                foreach (var iEntidadeVisInUow in entidadesVisualizadas)
                 {
-                    visualizacoesGravadas.Add(new BsnVisualizacaoGravada { DadosExtraidos = ExtrairDados(iEntidadeVis) });
+                    visualizacoesGravadasInUow.Add(new BsnVisualizacaoGravada { DadosExtraidos = ExtrairDados(iEntidadeVisInUow) });
                 }
-                var colunaEId = BsnColunaLiterais.ObterColunaEspecificaPorNome(nomeColecao, "Id", typeof(TDbModel));
-                var idsSerializadosEntidades = visualizacoesGravadas.Select(x => x.ObterIdSerializadoJson(colunaEId)).ToList();
-                var linqExpDadosInclusaoId = new LinqExpModel<DadoDbModel>(x => idsSerializadosEntidades.Contains(x.ValorSerializadoJson)
-                    && x.IdColuna == colunaEId.Id
+                var colunaEIdInUow = BsnColunaLiterais.ObterColunaEspecificaPorNome(nomeColecao, "Id", typeof(TDbModel));
+                var idsSerializadosEntidadesInUow = visualizacoesGravadasInUow.Select(x => x.ObterIdSerializadoJson(colunaEIdInUow)).ToList();
+                var linqExpDadosInclusaoIdInUow = new LinqExpModel<DadoDbModel>(x => idsSerializadosEntidadesInUow.Contains(x.ValorSerializadoJson)
+                    && x.IdColuna == colunaEIdInUow.Id
                     && x.IdTipoRegistro == BsnTipoRegistroLiterais.Inclusao.Id);
-                var dadosInclusaoId = await _dadoRepository.SelectByLinqExpModelAsync(linqExpDadosInclusaoId);
-                foreach (var iVisGravada in visualizacoesGravadas)
+                var dadosInclusaoIdInUow = await _dadoRepository.SelectByLinqExpModelAsync(linqExpDadosInclusaoIdInUow);
+                foreach (var iVisGravadaInUow in visualizacoesGravadasInUow)
                 {
-                    iVisGravada.DadoEIdDb = dadosInclusaoId.First(x => x.ValorSerializadoJson == iVisGravada.ObterIdSerializadoJson(colunaEId));
+                    iVisGravadaInUow.DadoEIdDb = dadosInclusaoIdInUow.First(x => x.ValorSerializadoJson == iVisGravadaInUow.ObterIdSerializadoJson(colunaEIdInUow));
                 }
-                var insercaoManyVisualizacoes = new List<VisualizacaoRegistroDbModel>();
-                var insercaoManyDados = new List<DadoDbModel>();
-                var retornoIds = new List<string>();
-                foreach (var iVisGravada in visualizacoesGravadas)
+                var insercaoManyVisualizacoesInUow = new List<VisualizacaoRegistroDbModel>();
+                var insercaoManyDadosInUow = new List<DadoDbModel>();
+                var retornoIdsInUow = new List<string>();
+                foreach (var iVisGravadaInUow in visualizacoesGravadasInUow)
                 {
-                    var visualizacaoRegistroInserido = new VisualizacaoRegistroDbModel
+                    var visualizacaoRegistroInseridoInUow = new VisualizacaoRegistroDbModel
                     {
                         Id = MongoId.NewMongoId,
                         IdColaboradorVisualizacao = idColaboradorVisualizacao,
-                        IdRegistroVisualizado = iVisGravada.DadoEIdDb.IdRegistroGenerico,
-                        HoraVisualizacao = hrVisualizacao,
+                        IdRegistroVisualizado = iVisGravadaInUow.DadoEIdDb.IdRegistroGenerico,
+                        HoraVisualizacao = hrVisualizacaoInUow,
                     };
-                    insercaoManyVisualizacoes.Add(visualizacaoRegistroInserido);
-                    var dadosEntidadeFiltrado = iVisGravada.DadosExtraidos.Where(x => idsColunasVisualizacao.Contains(x.IdColuna));
+                    insercaoManyVisualizacoesInUow.Add(visualizacaoRegistroInseridoInUow);
+                    var dadosEntidadeFiltrado = iVisGravadaInUow.DadosExtraidos.Where(x => idsColunasVisualizacao.Contains(x.IdColuna));
                     foreach (var iDadoEntidade in dadosEntidadeFiltrado)
                     {
                         iDadoEntidade.IdTipoRegistro = BsnTipoRegistroLiterais.Visualizacao.Id;
-                        iDadoEntidade.IdRegistroGenerico = visualizacaoRegistroInserido.Id;
+                        iDadoEntidade.IdRegistroGenerico = visualizacaoRegistroInseridoInUow.Id;
                     }
-                    insercaoManyDados.AddRange(dadosEntidadeFiltrado);
-                    retornoIds.Add(visualizacaoRegistroInserido.Id);
+                    insercaoManyDadosInUow.AddRange(dadosEntidadeFiltrado);
+                    retornoIdsInUow.Add(visualizacaoRegistroInseridoInUow.Id);
                 }
-                await _visualizacaoRegistroRepository.InsertManyAsync(insercaoManyVisualizacoes);
-                await _dadoRepository.InsertManyAsync(insercaoManyDados);
+                await _visualizacaoRegistroRepository.InsertManyAsync(insercaoManyVisualizacoesInUow);
+                await _dadoRepository.InsertManyAsync(insercaoManyDadosInUow);
                 await _uow.CommitTransactionAsync();
-                return retornoIds;
+                return retornoIdsInUow;
             }
             catch (Exception)
             {
@@ -440,19 +436,18 @@ public class GravadorLogBusiness : IGravadorLogBusiness
             await _uow.StartTransactionAsync();
             try
             {
-                var hrExclusao = DateTime.Now;
-                var colunaEId = BsnColunaLiterais.ObterColunaEspecificaPorNome(nomeColecao, "Id", typeof(TDbModel));
-                var entidadeIdSerializadoJson = idEntidade.AsSerializadoJson();
-                var linqExpDadoInclusaoId = new LinqExpModel<DadoDbModel>(x => x.ValorSerializadoJson == entidadeIdSerializadoJson
-                    && x.IdColuna == colunaEId.Id
+                var hrExclusaoInUow = DateTime.Now;
+                var colunaEIdInUow = BsnColunaLiterais.ObterColunaEspecificaPorNome(nomeColecao, "Id", typeof(TDbModel));
+                var entidadeIdSerializadoJsonInUow = idEntidade.AsSerializadoJson();
+                var linqExpDadoInclusaoIdInUow = new LinqExpModel<DadoDbModel>(x => x.ValorSerializadoJson == entidadeIdSerializadoJsonInUow
+                    && x.IdColuna == colunaEIdInUow.Id
                     && x.IdTipoRegistro == BsnTipoRegistroLiterais.Inclusao.Id);
-                var dadoInclusaoId = (await _dadoRepository.SelectByLinqExpModelAsync(linqExpDadoInclusaoId)).First();
-                var registroExcluidoDb = await _registroRepository.SelectByIdAsync(dadoInclusaoId.IdRegistroGenerico);
-                registroExcluidoDb.FoiExcluido = true;
-                registroExcluidoDb.IdColaboradorExclusao = idColaboradorExclusao;
-                registroExcluidoDb.HoraExclusao = hrExclusao;
-                registroExcluidoDb.EstaEsperandoAprovacaoExclusao = false;
-                await _registroRepository.UpdateAsync(registroExcluidoDb.Id, registroExcluidoDb);
+                var dadoInclusaoIdInUow = (await _dadoRepository.SelectByLinqExpModelAsync(linqExpDadoInclusaoIdInUow)).First();
+                var registroExcluidoDbInUow = await _registroRepository.SelectByIdAsync(dadoInclusaoIdInUow.IdRegistroGenerico);
+                registroExcluidoDbInUow.FoiExcluido = true;
+                registroExcluidoDbInUow.IdColaboradorExclusao = idColaboradorExclusao;
+                registroExcluidoDbInUow.HoraExclusao = hrExclusaoInUow;
+                await _registroRepository.UpdateAsync(registroExcluidoDbInUow.Id, registroExcluidoDbInUow);
                 await _uow.CommitTransactionAsync();
             }
             catch (Exception)
@@ -474,7 +469,6 @@ public class GravadorLogBusiness : IGravadorLogBusiness
             registroExcluidoDb.FoiExcluido = true;
             registroExcluidoDb.IdColaboradorExclusao = idColaboradorExclusao;
             registroExcluidoDb.HoraExclusao = hrExclusao;
-            registroExcluidoDb.EstaEsperandoAprovacaoExclusao = false;
             await _registroRepository.UpdateAsync(registroExcluidoDb.Id, registroExcluidoDb);
         }
     }
