@@ -4,17 +4,20 @@ public class BsnStatusSolicitacaoLiterais
     public static readonly BsnStatusSolicitacao Aguardando = new BsnStatusSolicitacao
     {
         Id = "1",
-        Nome = "Aguardando"
+        Nome = "Aguardando",
+        FoiAprovadoOuReprovado = false
     };
     public static readonly BsnStatusSolicitacao Reprovada = new BsnStatusSolicitacao
     {
         Id = "2",
-        Nome = "Reprovada"
+        Nome = "Reprovada",
+        FoiAprovadoOuReprovado = true
     };
     public static readonly BsnStatusSolicitacao Aprovada = new BsnStatusSolicitacao
     {
         Id = "3",
-        Nome = "Aprovada"
+        Nome = "Aprovada",
+        FoiAprovadoOuReprovado = true
     };
     public static List<BsnStatusSolicitacao> ListarTodos()
     {
@@ -31,6 +34,10 @@ public class BsnStatusSolicitacaoLiterais
     
     public static BsnStatusSolicitacao? GetByIdOrDefault(string id)
     {
+        if (id is null)
+        {
+            return null;
+        }
         return ListarTodos().FirstOrDefault(x => x.Id == id);
     }
 }

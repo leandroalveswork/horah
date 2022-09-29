@@ -128,7 +128,7 @@
                 }
             </select>
         </div>
-        @if (temAprovadorOuReprovadorNaPesquisa)
+        @if (BsnStatusSolicitacaoLiterais.GetByIdOrDefault(idStatusSolicitacao)?.FoiAprovadoOuReprovado ?? false)
         {
             <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
                 <label>Nome Aprovador/Reprovador</label>
@@ -216,18 +216,6 @@
     private List<int> listaAnos = HrhListaSuporteStrategy.ListarEsteEUltimos20Anos();
     private string? idStatusSolicitacao;
     private string? nomeAprovadorReprovador;
-    private bool temAprovadorOuReprovadorNaPesquisa
-    {
-        get
-        {
-            var ltStatusSolic = BsnStatusSolicitacaoLiterais.GetByIdOrDefault(idStatusSolicitacao ?? "");
-            if (ltStatusSolic is null)
-            {
-                return false;
-            }
-            return (ltStatusSolic.Id == BsnStatusSolicitacaoLiterais.Aprovada.Id || ltStatusSolic.Id == BsnStatusSolicitacaoLiterais.Reprovada.Id);
-        }
-    }
 
     private string idPesquisar = MongoId.NewMongoId;
     private List<BsnRelacaoDeSolicitacao> relacoes = new List<BsnRelacaoDeSolicitacao>();

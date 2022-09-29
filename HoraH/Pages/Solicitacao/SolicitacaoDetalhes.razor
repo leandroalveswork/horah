@@ -1,0 +1,184 @@
+@page "/solicitacao/detalhes"
+@using Domain.Design.Patterns.Strategy
+@using Domain.Models
+@using Domain.Interfaces.Accessor
+@using Domain.Interfaces.Repository
+@using Domain.Interfaces.Business
+@using Domain.Interfaces.Configuration
+@using Domain.Models.Bsn
+@using Domain.Models.Bsn.Autorizacao
+@using Domain.Models.Bsn.Funcionalidade
+@using Domain.Models.Bsn.Solicitacao
+@using Domain.Models.ViewModels
+
+@inject IColaboradorLogadoAccessor ColaboradorLogadoAccessor
+@inject IAutorizacaoBusiness AutorizacaoBusiness
+@inject IColaboradorBusiness ColaboradorBusiness
+@inject IAppConfiguration AppConfiguration
+@inject NavigationManager UriHelper
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Detalhes da Solicitação</PageTitle>
+
+<div class='d-flex flex-column align-items-center'>
+    <h1>Detalhes da Solicitação</h1>
+    <div class='row g-0 w-100 d-flex'>
+        <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
+            <label>Solicitador</label>
+            <input type='text' @bind="nomeSolicitador" disabled />
+        </div>
+        <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
+            <label>Tipo Solicitação</label>
+            <select value="idTipoSolicitacao" disabled>
+                <option value="">Selecione...</option>
+                @foreach (var iLtTipoSolic in BsnTipoSolicitacaoLiterais.ListarTodos())
+                {
+                    <option value=@(iLtTipoSolic.Id)>@iLtTipoSolic.Nome</option>
+                }
+            </select>
+        </div>
+        <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
+            <label>Hora Solicitação</label>
+            <input type='text' value=@(horaSolicitacao.ToString("HH:mm:ss - dd/MM/yyyy")) disabled/>
+        </div>
+    </div>
+    <div class='row g-0 w-100 d-flex'>
+        <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
+            <label>Motivo Solicitação</label>
+            <textarea type='text' @bind="motivoSolicitacao" disabled rows="5"></textarea>
+        </div>
+    </div>
+    <div class='row g-0 w-100 d-flex'>
+        <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
+            <label>Status</label>
+            <select value="idStatus" disabled>
+                <option value="">Selecione...</option>
+                @foreach (var iLtStatusSolic in BsnStatusSolicitacaoLiterais.ListarTodos())
+                {
+                    <option value=@(iLtStatusSolic.Id)>@iLtStatusSolic.Nome</option>
+                }
+            </select>
+        </div>
+        @if (BsnStatusSolicitacaoLiterais.GetByIdOrDefault(idStatus)?.FoiAprovadoOuReprovado ?? false)
+        {
+            <div class='d-flex flex-column col-12 col-sm-6 col-md-4 px-2 pt-3'>
+                <label>Solicitador</label>
+                <input type='text' @bind="nomeSolicitador" disabled />
+            </div>
+        }
+    </div>
+    
+    <div class='row g-0 w-100 d-flex'>
+        <div class='d-flex flex-column col-6 px-2 pt-3'>
+            <button class='p-2 border-non-important border-2 border-hrh-texto hrh-bg-inherit-non-important h-100 text-hrh-texto-non-important onhover-bg-hrh-texto-non-important onhover-text-hrh-fundo-non-important' @onclick="VoltarAsync" >
+                <span class='oi oi-arrow-left pe-2'></span>Voltar
+            </button>
+        </div>
+        @if (ColaboradorLogadoAccessor.ColaboradorLogado.TemPermissaoPara(BsnFuncionalidadeLiterais.AlterarAcesso) && !eVisualizacao && idColaborador != ColaboradorLogadoAccessor.ColaboradorLogado.Id && AppConfiguration.ColaboradorAdmin.Login != login)
+        {
+            <div class='d-flex flex-column col-6 px-2 pt-3'>
+                <button class='p-2 border-non-important border-2 border-success hrh-bg-inherit-non-important h-100 text-success-non-important onhover-bg-bs-success-non-important onhover-text-hrh-fundo-non-important' @onclick="TrySalvarAsync" >
+                    <span class='oi oi-check pe-2'></span>Salvar
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [CascadingParameter(Name = "SetRefColaboradorLogadoAsync")]
+    public EventCallback<BsnColaboradorLogado> SetRefColaboradorLogadoAsync { get; set; }
+    [CascadingParameter(Name = "SairEFecharAsync")]
+    public EventCallback SairEFecharAsync { get; set; }
+    [CascadingParameter(Name = "SetMensagemDeAlerta")]
+    public EventCallback<DetalhesMensagemDeAlertaViewModel> SetMensagemDeAlerta { get; set; }
+    [CascadingParameter(Name = "SetMensagemConfirmar")]
+    public EventCallback<DetalhesMensagemConfirmarViewModel> SetMensagemConfirmar { get; set; }
+    [CascadingParameter(Name = "LockUI")]
+    public EventCallback<string> LockUI { get; set; }
+    [CascadingParameter(Name = "UnlockUI")]
+    public EventCallback<string> UnlockUI { get; set; }
+    [CascadingParameter(Name = "VoltarAsync")]
+    public EventCallback VoltarAsync { get; set; }
+    private string? nome;
+    private string? login;
+    private string? idColaborador;
+    private bool eVisualizacao;
+    private List<BsnAcesso> acessos = new List<BsnAcesso>();
+    private string idSalvar = MongoId.NewMongoId;
+
+    private bool deveCarregarDados = false;
+    protected override void OnInitialized()
+    {
+        deveCarregarDados = true;
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (deveCarregarDados)
+        {
+            await CarregarDadosAsync();
+            deveCarregarDados = false;
+            StateHasChanged();
+        }
+    }
+    private async Task CarregarDadosAsync()
+    {
+        idColaborador = UriHelper.Uri.ExtrairQueryParamDeUrl("id");
+        eVisualizacao = UriHelper.Uri.ExtrairQueryParamDeUrl("eVisualizacao") == "" || UriHelper.Uri.ExtrairQueryParamDeUrl("eVisualizacao") == "S";
+        if (idColaborador == null)
+        {
+            return;
+        }
+        var resColaborador = await ColaboradorBusiness.ObterPorIdAsync(idColaborador);
+        if (!resColaborador.EstaOk)
+        {
+            await SetMensagemDeAlerta.InvokeAsync(new DetalhesMensagemDeAlertaViewModel
+            {
+                Titulo = Message.TituloAtencao,
+                NomeDaClasseDeCssDoIcone = Message.IconeErro,
+                Mensagem = resColaborador.Mensagem
+            });
+            return;
+        }
+        nome = resColaborador.Resultado.Nome;
+        login = resColaborador.Resultado.Login;
+        var resAcessos = await ColaboradorBusiness.ObterAcessosDoColaboradorAsync(idColaborador);
+        if (!resAcessos.EstaOk)
+        {
+            await SetMensagemDeAlerta.InvokeAsync(new DetalhesMensagemDeAlertaViewModel
+            {
+                Titulo = Message.TituloAtencao,
+                NomeDaClasseDeCssDoIcone = Message.IconeErro,
+                Mensagem = resAcessos.Mensagem
+            });
+        }
+        acessos = resAcessos.Resultado;
+    }
+
+    public async Task TrySalvarAsync()
+    {
+        await LockUI.InvokeAsync(idSalvar);
+        await Task.Yield();
+        var result = await ColaboradorBusiness.AlterarAcessosAsync(idColaborador, acessos);
+        if (!result.EstaOk)
+        {
+            var mensagemDeAlerta = new DetalhesMensagemDeAlertaViewModel()
+            {
+                Titulo = Message.TituloAtencao,
+                NomeDaClasseDeCssDoIcone = Message.IconeErro,
+                Mensagem = result.Mensagem
+            };
+            await SetMensagemDeAlerta.InvokeAsync(mensagemDeAlerta);
+            await UnlockUI.InvokeAsync(idSalvar);
+            return;
+        }
+        await SetMensagemDeAlerta.InvokeAsync(new DetalhesMensagemDeAlertaViewModel()
+        {
+            Titulo = Message.TituloAtencao,
+            NomeDaClasseDeCssDoIcone = Message.IconeSucesso,
+            Mensagem = result.Mensagem,
+            AcaoAposFechar = EventCallback.Factory.Create(this, () => UriHelper.NavigateTo("/colaborador", true))
+        });
+        await UnlockUI.InvokeAsync(idSalvar);
+    }
+}

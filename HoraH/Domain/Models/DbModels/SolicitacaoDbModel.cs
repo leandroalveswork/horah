@@ -8,8 +8,8 @@ public class SolicitacaoDbModel
     [BsonRepresentation(BsonType.ObjectId)]
     public string? Id { get; set; }
     public string? IdColaboradorSolicitador { get; set; }
-    public DateTime HoraSolicitacao { get; set; }
     public string? IdTipoSolicitacao { get; set; }
+    public DateTime HoraSolicitacao { get; set; }
     public string MotivoSolicitacao { get; set; } = "";
     public string? IdStatusSolicitacao { get; set; }
     public string? IdColaboradorAprovadorOuRejeitador { get; set; }

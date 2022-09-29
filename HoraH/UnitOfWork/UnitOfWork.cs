@@ -61,7 +61,7 @@ public class UnitOfWork : IUnitOfWork
             await CommitTransactionAsync();
             return true;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             await RollbackTransactionAsync();
             return false;

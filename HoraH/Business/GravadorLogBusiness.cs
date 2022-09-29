@@ -325,6 +325,10 @@ public class GravadorLogBusiness : IGravadorLogBusiness
 
     public async Task<List<string>> GravarMuitasVisualizacoesAsync<TDbModel>(List<TDbModel> entidadesVisualizadas, List<string> idsColunasVisualizacao, string idColaboradorVisualizacao)
     {
+        if (!entidadesVisualizadas.Any())
+        {
+            return new List<string>();
+        }
         var uowSession = _dbSessionAccessor.DbSession;
         var nomeColecao = typeof(TDbModel).Name.Split("DbModel")[0];
         if (uowSession == null)
